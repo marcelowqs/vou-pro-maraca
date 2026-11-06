@@ -76,6 +76,13 @@
   .btn.grupo{background:#25d366;color:#0b2e17;margin-top:14px;font-size:16.5px;padding:15px}
   .convOk{margin-top:10px;color:var(--ok);font-weight:600;font-size:14px}
   .avisoVip{margin-top:12px;padding:10px 12px;border-radius:10px;background:rgba(255,206,84,.15);color:#ffe08a;font-size:13.5px;font-weight:600;line-height:1.4}
+  .regTit{font-weight:800;font-size:15px;margin-bottom:6px}
+  .regras{margin:0;padding-left:20px;font-weight:500}
+  .regras li{margin:6px 0}
+  .numeros{margin-top:18px;padding:16px;border-radius:14px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.2)}
+  .numTit{font-weight:700;font-size:16px}
+  .numGrande{font-family:"Bebas Neue",Impact,sans-serif;font-size:64px;line-height:1;margin:6px 0 4px;color:#fff}
+  .btn.sec{background:transparent;border:1px solid rgba(255,255,255,.4);color:#fff;font-size:15px;padding:12px;margin-top:10px}
   .hidden{display:none!important}
   footer{text-align:center;color:#8fa8cc;font-size:12px;margin-top:28px}
 </style>
@@ -120,8 +127,8 @@
     <div class="dica" id="d-zap"></div>
 
     <div id="secAmigos" class="amigos hidden">
-      <div class="amigosTit">📣 Convide <span id="nAmigos">5</span> amigos para o Grupo VIP</div>
-      <p class="muted" style="font-size:13.5px;margin:4px 0 0">É a regra para participar: toque no botão, escolha <b><span id="nAmigos2">5</span> amigos</b> nos seus contatos do WhatsApp e envie o convite.</p>
+      <div class="amigosTit">📣 Convide seus amigos para o Grupo VIP</div>
+      <p class="muted" style="font-size:13.5px;margin:4px 0 0">É a regra para participar: toque no botão, escolha seus amigos nos contatos do WhatsApp (no mínimo <b><span id="nAmigos">5</span></b>) e envie o convite. <b>Quanto mais amigos se inscreverem pelo seu convite, mais números da sorte você ganha!</b></p>
       <button type="button" class="btn zap" id="btnConvidarForm">📲 Convidar amigos no WhatsApp</button>
       <div class="convOk hidden" id="convOk">✅ Convite enviado! Se quiser, toque de novo e convide mais gente.</div>
       <div class="dica" id="d-amigos"></div>
@@ -149,8 +156,16 @@
     <p class="muted" id="sucessoTxt"></p>
     <p class="sorte">Aguarde o resultado e boa sorte! 🍀</p>
     <p class="muted">O resultado sai no Grupo VIP das Lojas Oficiais do Flamengo.</p>
-    <div class="avisoVip hidden" id="avisoVipFim">⚠️ Os vencedores só recebem o ingresso se estiverem participando do Grupo VIP.</div>
+    <div class="avisoVip hidden" id="avisoVipFim">⚠️ <b>Imprescindível:</b> só recebe o ingresso quem estiver participando do Grupo VIP do WhatsApp. Se ainda não entrou, entre agora:</div>
     <a class="btn grupo hidden" id="grupoFim" target="_blank" rel="noopener">💚 Participar do Grupo VIP no WhatsApp</a>
+    <div class="numeros hidden" id="numerosBox">
+      <div class="numTit">🍀 Seus números da sorte</div>
+      <div class="numGrande" id="numQtd">1</div>
+      <div class="muted" id="numTxt" style="font-size:14px"></div>
+      <p class="muted" style="font-size:14px;margin:10px 0 0">Quanto mais amigos você chamar, maiores as suas chances! Cada amigo que se inscrever pelo <b>seu</b> convite vale <b>+1 número da sorte</b>. Sem limite.</p>
+      <button type="button" class="btn zap" id="convidarMais">📲 Convidar mais amigos</button>
+      <button type="button" class="btn sec" id="atualizarNumeros">🔄 Atualizar meus números</button>
+    </div>
   </div>
 
   <div id="conviteCard" class="card centro hidden" style="border-color:#2f6b45">
@@ -241,10 +256,11 @@ $('form').addEventListener('submit', async e=>{
         if(error && !/exists|Duplicate/i.test(error.message)) throw error; }); }
       catch(e){ path=null; } // selfie é opcional: se falhar, segue sem ela
     }
-    await tentar(async()=>{ const {error}=await sb.rpc('inscrever_v4',{ p_codigo:codigo, p_id:id, p_nome:$('nome').value.trim(),
+    await tentar(async()=>{ const {data,error}=await sb.rpc('inscrever_v5',{ p_codigo:codigo, p_id:id, p_nome:$('nome').value.trim(),
         p_nascimento:dataNasc($('nasc').value).iso, p_whatsapp:so($('zap').value), p_selfie_path:path,
-        p_convidou: convidou });
-      if(error){ const er=new Error(error.message); if(!/fetch|network|timeout/i.test(error.message)) er.naoRepetir=true; throw er; } });
+        p_convidou: convidou, p_meu_ref: meuRef, p_ref: refRecebido || null });
+      if(error){ const er=new Error(error.message); if(!/fetch|network|timeout/i.test(error.message)) er.naoRepetir=true; throw er; }
+      if(data && data.ref_code){ meuRef=data.ref_code; guardar('vpm_meuref_'+codigo, meuRef); } });
     guardar('vpm_'+codigo, $('zap').value);
     guardar('vpm_nome', $('nome').value.trim().split(/\s+/)[0].replace(/^./,c=>c.toUpperCase()));
     mostrarSucesso($('zap').value);
@@ -256,12 +272,17 @@ $('form').addEventListener('submit', async e=>{
 function limpa(m){ return (m||'').replace(/^.*?ERROR:\s*/,''); }
 function mostrarSucesso(zap){
   $('form').classList.add('hidden'); $('sucesso').classList.remove('hidden');
+  if(linkGrupo){ $('conviteCard').classList.add('hidden'); $('numerosBox').classList.remove('hidden'); atualizarNumeros(); }
   $('sucessoTxt').innerHTML = `O sorteio acontece após o encerramento das inscrições (<b>${fmtData(evento.inscricoes_ate)}</b>).<br>Se você for sorteado, vamos te avisar no WhatsApp <b>${zap}</b>.`;
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
 // ---------- convidar amigos para o grupo ----------
 let linkGrupo=null, convitesMin=0, convidou=false;
+const refRecebido=(new URLSearchParams(location.search).get('r')||'').replace(/[^a-zA-Z0-9]/g,'').toLowerCase();
+let meuRef = ler('vpm_meuref_'+codigo) || Array.from(crypto.getRandomValues(new Uint8Array(8)),b=>'abcdefghjkmnpqrstuvwxyz23456789'[b%31]).join('');
+guardar('vpm_meuref_'+codigo, meuRef);
+const meuLink=()=>{ const u=new URL(location.href); u.search=''; u.hash=''; u.searchParams.set('e',codigo); u.searchParams.set('r',meuRef); return u.href; };
 const amigosAtivos=()=>!!(linkGrupo && convitesMin>0);
 function primeiroNome(){
   const digitado=$('nome').value.trim().split(/\s+/)[0];
@@ -272,11 +293,11 @@ function mensagemConvite(){
   const nome=primeiroNome();
   const abertura = nome ? `Fala! 👋 *${nome}* está te convidando` : 'Fala! 👋 Você foi convidado';
   const jogo = evento && evento.nome ? ` *${evento.nome}*` : '';
-  const regra = (convitesMin>0 ? `\n\n📌 Regra do sorteio: para participar, você também convida ${convitesMin} amigos para o grupo.` : '')+
-    `\n⚠️ Os vencedores só recebem o ingresso se estiverem no Grupo VIP.`;
   return `${abertura} para o *Grupo VIP das Lojas Oficiais do Flamengo* no WhatsApp! 🔴⚫\n\n`+
-    `1️⃣ Entra no grupo por este link:\n${linkGrupo}\n\n`+
-    `2️⃣ Lá no grupo, clica no link do *Vou pro Maraca* e se inscreve para concorrer a ingressos para o jogo${jogo} no Maracanã! 🎟️⚽`+regra;
+    `Está rolando o *Vou pro Maraca*: sorteio de ingressos para o jogo${jogo} no Maracanã! 🎟️⚽\n\n`+
+    `1️⃣ Entra no Grupo VIP (imprescindível para ganhar o prêmio):\n${linkGrupo}\n\n`+
+    `2️⃣ Faz sua inscrição por este link:\n${meuLink()}\n\n`+
+    `🍀 Quanto mais amigos você chamar, maiores as suas chances!`;
 }
 $('convidar').onclick=()=>{ if(linkGrupo) window.open('https://wa.me/?text='+encodeURIComponent(mensagemConvite()),'_blank'); };
 
@@ -287,7 +308,7 @@ $('btnConvidarForm').onclick=()=>{
 };
 function checarAmigos(){
   if(!amigosAtivos()) return '';
-  return convidou ? '' : `Toque em "Convidar amigos no WhatsApp" e envie o convite para ${convitesMin} amigos.`;
+  return convidou ? '' : `Toque em "Convidar amigos no WhatsApp" e envie o convite para pelo menos ${convitesMin} amigos.`;
 }
 async function carregarConvite(){
   try{
@@ -297,13 +318,29 @@ async function carregarConvite(){
       $('conviteCard').classList.remove('hidden');
       ['grupoTopo','grupoFim'].forEach(id=>{ $(id).href=linkGrupo; $(id).classList.remove('hidden'); });
       $('avisoVipFim').classList.remove('hidden');
-      const aviso='⚠️ Os vencedores só recebem o ingresso se estiverem participando do Grupo VIP das Lojas Oficiais do Flamengo.';
-      $('evRegra').innerHTML = (convitesMin>0 ? `📌 <b>Regra:</b> para participar, convide ${convitesMin} amigos para o Grupo VIP. O convite é feito aqui mesmo, na inscrição.<br><br>` : '') + aviso;
+      $('evIdade').classList.add('hidden');
+      const mins = convitesMin>0 ? ` (no mínimo ${convitesMin})` : '';
+      $('evRegra').innerHTML = `<div class="regTit">📋 Regras do sorteio</div><ol class="regras">`+
+        `<li><b>Estar no Grupo VIP do WhatsApp das Lojas Oficiais do Flamengo é imprescindível para ganhar o prêmio.</b> Quem for sorteado e não estiver no grupo perde o ingresso.</li>`+
+        (convitesMin>0 ? `<li>Para participar, convide seus amigos para o Grupo VIP${mins}. O convite é feito aqui mesmo, na inscrição.</li>` : '')+
+        `<li><b>Quanto mais amigos você chamar, maiores as suas chances!</b> Cada amigo que se inscrever pelo seu convite vale +1 número da sorte. Sem limite.</li>`+
+        `<li>Uma inscrição por WhatsApp${evento.idade_minima>0?`, somente maiores de ${evento.idade_minima} anos`:''}.</li></ol>`;
       $('evRegra').classList.remove('hidden');
-      if(convitesMin>0){ $('nAmigos').textContent=convitesMin; $('nAmigos2').textContent=convitesMin; $('secAmigos').classList.remove('hidden'); }
+      if(convitesMin>0){ $('nAmigos').textContent=convitesMin; $('secAmigos').classList.remove('hidden'); }
     }
   }catch(e){}
 }
+
+// ---------- números da sorte ----------
+async function atualizarNumeros(){
+  try{ const {data}=await sb.rpc('meus_numeros',{p_ref:meuRef});
+    const n=(data&&data.numeros)||1, a=(data&&data.amigos)||0;
+    $('numQtd').textContent=n;
+    $('numTxt').textContent = a ? `${a} ${a>1?'amigos se inscreveram':'amigo se inscreveu'} pelo seu convite 👏` : 'Nenhum amigo se inscreveu pelo seu convite ainda.';
+  }catch(e){}
+}
+$('convidarMais').onclick=()=>{ if(linkGrupo) window.open('https://wa.me/?text='+encodeURIComponent(mensagemConvite()),'_blank'); };
+$('atualizarNumeros').onclick=async()=>{ await atualizarNumeros(); toast('Números atualizados 🍀'); };
 
 // ---------- carregar evento ----------
 (async()=>{
