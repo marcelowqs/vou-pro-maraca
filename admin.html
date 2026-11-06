@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Vou pro Maraca – Painel</title>
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#1f2124">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root{--grafite:#1f2124;--grafite2:#2a2d31;--grafite3:#383c42;--linha:#44484f;--ouro:#d4af37;--ouro2:#f1d27a;--texto:#f2f2f2;--suave:#a9adb4;--erro:#ff6b6b;--ok:#4cd28a;--zap:#25d366}
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--grafite);color:var(--texto);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:760px;margin:0 auto;padding:14px 14px 60px}
+  .top{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:6px 0 10px;border-bottom:1px solid var(--linha);margin-bottom:12px}
+  .logo{font-family:"Bebas Neue",Impact,sans-serif;font-size:32px;letter-spacing:1px;margin:0;background:linear-gradient(180deg,var(--ouro2),var(--ouro));-webkit-background-clip:text;background-clip:text;color:transparent;cursor:pointer}
+  .card{background:var(--grafite2);border:1px solid var(--linha);border-radius:16px;padding:16px;margin-top:12px}
+  h2{font-family:"Bebas Neue",Impact,sans-serif;font-size:30px;letter-spacing:.5px;margin:0 0 4px;color:var(--ouro2)}
+  h3{margin:0 0 10px;font-size:17px}
+  .muted{color:var(--suave);font-size:14px}
+  label{display:block;font-size:13.5px;font-weight:600;margin:12px 0 5px;color:var(--suave)}
+  input,textarea,select{width:100%;padding:12px;border-radius:10px;border:1px solid var(--linha);background:var(--grafite);color:var(--texto);font-size:16px;font-family:inherit;outline:none}
+  input:focus,textarea:focus{border-color:var(--ouro)}
+  textarea{resize:vertical;min-height:90px;line-height:1.45}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:0 12px}
+  @media(max-width:520px){.grid2{grid-template-columns:1fr}}
+  button{font-family:inherit;cursor:pointer}
+  .btn{padding:12px 16px;border-radius:11px;border:1px solid var(--linha);background:var(--grafite3);color:var(--texto);font-size:15px;font-weight:600}
+  .btn.ouro{background:linear-gradient(180deg,var(--ouro2),var(--ouro));color:#1b1b1b;border:0}
+  .btn.zap{background:var(--zap);color:#0b2e17;border:0}
+  .btn.perigo{border-color:#6b3434;color:var(--erro);background:transparent}
+  .btn.sm{padding:8px 11px;font-size:13.5px;border-radius:9px}
+  .btn.full{width:100%}
+  .btn:disabled{opacity:.5;cursor:default}
+  .acoes{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+  .evento{cursor:pointer;transition:.15s}
+  .evento:hover{border-color:var(--ouro)}
+  .linha{display:flex;justify-content:space-between;align-items:center;gap:10px}
+  .badge{display:inline-block;font-size:12px;font-weight:700;padding:4px 9px;border-radius:20px;white-space:nowrap}
+  .b-aberto{background:#1d3b2a;color:var(--ok)} .b-aguard{background:#3b331d;color:var(--ouro2)} .b-sort{background:#2b2f45;color:#9fb2ff}
+  .stats{display:flex;gap:10px;margin-top:10px}
+  .stat{flex:1;background:var(--grafite);border-radius:12px;padding:10px;text-align:center}
+  .stat b{display:block;font-size:24px;color:var(--ouro2)}
+  .stat span{font-size:12px;color:var(--suave)}
+  .linkbox{display:flex;gap:8px;margin-top:8px}
+  .linkbox input{font-size:13.5px}
+  .pessoa{display:flex;gap:12px;align-items:center;padding:10px 0;border-top:1px solid var(--linha)}
+  .pessoa:first-child{border-top:0}
+  .foto{width:58px;height:58px;border-radius:50%;object-fit:cover;background:var(--grafite3);flex:none;border:2px solid var(--linha);cursor:zoom-in}
+  .ganhador .foto{border-color:var(--ouro)}
+  .pinfo{flex:1;min-width:0}
+  .pinfo b{display:block;font-size:15.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .pinfo small{color:var(--suave);font-size:12.5px;display:block;line-height:1.5}
+  .ordem{font-family:"Bebas Neue",Impact,sans-serif;font-size:28px;color:var(--ouro);width:30px;text-align:center;flex:none}
+  .pbtns{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+  .avisado{color:var(--ok);font-size:12.5px;font-weight:600}
+  .semlink{color:var(--erro);font-size:12.5px;font-weight:600}
+  .sortear{font-size:22px;padding:18px;font-family:"Bebas Neue",Impact,sans-serif;letter-spacing:1.5px}
+  .toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(140px);background:#111;color:#fff;border:1px solid var(--linha);padding:12px 18px;border-radius:12px;font-size:14.5px;max-width:92vw;transition:.3s;z-index:50;box-shadow:0 8px 24px rgba(0,0,0,.4)}
+  .toast.on{transform:translateX(-50%) translateY(0)} .toast.erro{border-color:var(--erro)}
+  .overlay{position:fixed;inset:0;background:rgba(10,10,12,.92);z-index:40;display:flex;align-items:center;justify-content:center;flex-direction:column;padding:20px;text-align:center}
+  .overlay img{max-width:92vw;max-height:80vh;border-radius:16px}
+  .roleta{font-family:"Bebas Neue",Impact,sans-serif;font-size:min(13vw,64px);color:var(--ouro2);min-height:1.2em;letter-spacing:1px}
+  .hidden{display:none!important}
+  .busca{margin-top:4px}
+  .tag{font-size:11px;font-weight:700;padding:2px 7px;border-radius:10px;margin-left:6px;vertical-align:2px}
+  .t-sup{background:#3b331d;color:var(--ouro2)} .t-desc{background:#3b1d1d;color:var(--erro)}
+  .ajuda{font-size:12.5px;color:var(--suave);margin-top:5px;line-height:1.45}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <h1 class="logo" onclick="irLista()">VOU PRO MARACA</h1>
+    <button class="btn sm hidden" id="sair">Sair</button>
+  </div>
+
+  <!-- LOGIN -->
+  <div id="vLogin" class="card hidden" style="max-width:420px;margin:30px auto">
+    <h3>Acesso do administrador</h3>
+    <label>E-mail</label><input id="lEmail" type="email" autocomplete="email">
+    <label>Senha</label><input id="lSenha" type="password" autocomplete="current-password">
+    <div class="acoes"><button class="btn ouro full" id="bEntrar">Entrar</button></div>
+    <div class="acoes"><button class="btn sm" id="bCriar">Criar meu acesso</button><button class="btn sm" id="bEsqueci">Esqueci a senha</button></div>
+    <p class="ajuda">Primeira vez? Use "Criar meu acesso" com o e-mail autorizado e confirme no link que chegar no seu e-mail.</p>
+  </div>
+
+  <div id="vSemAcesso" class="card hidden"><h3>Sem permissão</h3><p class="muted">Este e-mail não está autorizado a administrar os sorteios.</p></div>
+
+  <!-- LISTA -->
+  <div id="vLista" class="hidden">
+    <div class="linha"><h3 style="margin:8px 0 0">Eventos</h3><button class="btn ouro" id="bNovo">+ Novo evento</button></div>
+    <div id="listaEventos"></div>
+  </div>
+
+  <!-- FORM EVENTO -->
+  <div id="vForm" class="card hidden">
+    <h3 id="fTitulo">Novo evento</h3>
+    <label>Jogo</label><input id="fNome" placeholder="Ex.: Flamengo x Vasco">
+    <div class="grid2">
+      <div><label>Data e hora do jogo</label><input id="fData" type="datetime-local"></div>
+      <div><label>Setor</label><input id="fSetor" value="Oeste Superior"></div>
+      <div><label>Inscrições até</label><input id="fAte" type="datetime-local"></div>
+      <div><label>Idade mínima</label><input id="fIdade" type="number" min="0" max="100" value="18"></div>
+    </div>
+    <label>Links dos ingressos (um por linha)</label>
+    <textarea id="fLinks" placeholder="https://...&#10;https://..."></textarea>
+    <div class="ajuda" id="fLinksInfo">Cada ganhador recebe um link, na ordem do sorteio. Pode deixar para colocar depois.</div>
+    <label>Quantidade de sorteados</label><input id="fQtd" type="number" min="1" max="500" placeholder="Ex.: 5 ou 10">
+    <label>Mensagem para o vencedor</label>
+    <textarea id="fMsg" style="min-height:150px"></textarea>
+    <div class="ajuda">Campos automáticos: <b>{nome}</b> (primeiro nome), <b>{nome_completo}</b>, <b>{jogo}</b>, <b>{data}</b>, <b>{hora}</b>, <b>{setor}</b>, <b>{link}</b>. Use *texto* para negrito no WhatsApp.</div>
+    <div class="acoes"><button class="btn ouro" id="fSalvar">Salvar</button><button class="btn" id="fCancelar">Cancelar</button></div>
+  </div>
+
+  <!-- DETALHE -->
+  <div id="vDetalhe" class="hidden">
+    <div class="card">
+      <div class="linha"><h2 id="dNome"></h2><span id="dBadge"></span></div>
+      <div class="muted" id="dInfo"></div>
+      <div class="stats">
+        <div class="stat"><b id="dInscritos">0</b><span>inscritos</span></div>
+        <div class="stat"><b id="dQtd">0</b><span>sorteados</span></div>
+        <div class="stat"><b id="dLinks">0</b><span>links de ingresso</span></div>
+      </div>
+      <label>Link de inscrição</label>
+      <div class="linkbox"><input id="dLink" readonly><button class="btn sm" id="dCopiar">Copiar</button></div>
+      <div class="acoes">
+        <button class="btn zap" id="dConvite">📲 Mandar no grupo</button>
+        <button class="btn" id="dEditar">✏️ Editar</button>
+        <button class="btn" id="dEncerrar">⏹ Encerrar inscrições</button>
+        <button class="btn" id="dAtualizar">🔄 Atualizar</button>
+        <button class="btn" id="dCsv">⬇️ Planilha (CSV)</button>
+        <button class="btn perigo" id="dExcluir">Excluir</button>
+      </div>
+    </div>
+
+    <div class="card" id="cSortear">
+      <h3>Sorteio</h3>
+      <label>Suplentes (reservas, caso algum ganhador não responda)</label>
+      <input id="sSuplentes" type="number" min="0" max="50" value="2">
+      <div class="acoes"><button class="btn ouro full sortear" id="bSortear">🎲 SORTEAR AGORA</button></div>
+      <p class="ajuda">O sorteio é feito no servidor, de forma aleatória, e só pode ser feito uma vez por evento.</p>
+    </div>
+
+    <div class="card hidden" id="cResultado">
+      <div class="linha"><h3 style="margin:0">🏆 Ganhadores</h3><button class="btn sm" id="bCopiarRes">Copiar resultado p/ grupo</button></div>
+      <div id="listaGanhadores" style="margin-top:8px"></div>
+      <div class="acoes" id="acoesRes"></div>
+      <h3 style="margin-top:18px" id="tSup">Suplentes</h3>
+      <div id="listaSuplentes"></div>
+      <div class="acoes"><button class="btn sm" id="bMaisSup">🎲 Sortear mais um suplente</button></div>
+    </div>
+
+    <div class="card">
+      <h3>Inscritos</h3>
+      <input class="busca" id="busca" placeholder="Buscar por nome, CPF ou WhatsApp">
+      <div id="listaInscritos" style="margin-top:6px"></div>
+    </div>
+  </div>
+</div>
+
+<div class="overlay hidden" id="ovFoto" onclick="this.classList.add('hidden')"><img id="ovImg"><p class="muted">Toque para fechar</p></div>
+<div class="overlay hidden" id="ovSorteio"><p class="muted" id="ovTit">Sorteando…</p><div class="roleta" id="roleta"></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+const SUPABASE_URL='https://zqzijrbfugleqajcqkrt.supabase.co';
+const SUPABASE_KEY='sb_publishable_n9zvUxjFlOT79QmDNQ5tBA_AunmJBaD';
+const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+const MSG_PADRAO='🏆 Parabéns, {nome}! Você foi o grande vencedor do *Vou pro Maraca* e vai curtir um dia de Maraca no jogo *{jogo}*, dia {data} às {hora}, no setor *{setor}*.\n\n🎟️ Seu ingresso: {link}\n\nFaça o cadastro da sua facial e torça muito! ⚽🔥';
+const TZ='America/Sao_Paulo';
+const $=id=>document.getElementById(id);
+let eventos=[], atual=null, inscritos=[], fotos={}, editando=null;
+
+// ---------- utilidades ----------
+function toast(m,erro){const t=$('toast');t.textContent=m;t.className='toast on'+(erro?' erro':'');clearTimeout(t._h);t._h=setTimeout(()=>t.className='toast',3800)}
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const dia=iso=>iso?new Date(iso).toLocaleDateString('pt-BR',{timeZone:TZ,day:'2-digit',month:'2-digit'}):'—';
+const hora=iso=>iso?new Date(iso).toLocaleTimeString('pt-BR',{timeZone:TZ,hour:'2-digit',minute:'2-digit'}):'—';
+const dataHora=iso=>iso?`${dia(iso)} às ${hora(iso)}`:'—';
+const paraInput=iso=>{if(!iso)return'';const d=new Date(iso);return new Date(d-d.getTimezoneOffset()*60000).toISOString().slice(0,16)};
+const deInput=v=>v?new Date(v).toISOString():null;
+const fmtCpf=c=>c.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/,'$1.$2.$3-$4');
+const cpfMask=c=>`***.${c.slice(3,6)}.***-**`;
+const fmtZap=z=>{const n=z.replace(/^55/,'');return n.length===11?n.replace(/(\d{2})(\d{5})(\d{4})/,'($1) $2-$3'):n.replace(/(\d{2})(\d{4})(\d{4})/,'($1) $2-$3')};
+const idade=d=>{const n=new Date(d+'T12:00:00'),h=new Date();let i=h.getFullYear()-n.getFullYear();const m=h.getMonth()-n.getMonth();if(m<0||(m===0&&h.getDate()<n.getDate()))i--;return i};
+const primeiro=n=>n.trim().split(/\s+/)[0];
+const curto=n=>{const p=n.trim().split(/\s+/);return p.length>1?`${p[0]} ${p[p.length-1][0]}.`:p[0]};
+const links=ev=>(ev.links_ingressos||[]).map(s=>s.trim()).filter(Boolean);
+const linkInscricao=ev=>new URL('./?e='+ev.codigo,location.href).href.replace('/admin.html','/').replace(/\/\.\//,'/');
+async function tentar(fn,v=3){let u;for(let i=0;i<v;i++){try{const r=await fn();if(r&&r.error)throw r.error;return r}catch(e){u=e;if(e&&e.code&&!/fetch|network/i.test(e.message||''))break;await new Promise(r=>setTimeout(r,700*(i+1)))}}throw u}
+const erroMsg=e=>(e&&e.message||'Erro inesperado').replace(/^.*?ERROR:\s*/,'');
+function situacao(ev){if(ev.status==='sorteado')return['Sorteado','b-sort'];if(new Date()<new Date(ev.inscricoes_ate))return['Inscrições abertas','b-aberto'];return['Aguardando sorteio','b-aguard']}
+function mostrar(v){['vLogin','vSemAcesso','vLista','vForm','vDetalhe'].forEach(x=>$(x).classList.toggle('hidden',x!==v));window.scrollTo(0,0)}
+async function copiar(t){try{await navigator.clipboard.writeText(t);toast('Copiado ✅')}catch(e){const a=document.createElement('textarea');a.value=t;document.body.appendChild(a);a.select();document.execCommand('copy');a.remove();toast('Copiado ✅')}}
+function abrirZap(numero,texto){window.open(`https://wa.me/${numero||''}?text=${encodeURIComponent(texto)}`,'_blank')}
+
+// ---------- login ----------
+$('bEntrar').onclick=async()=>{const {error}=await sb.auth.signInWithPassword({email:$('lEmail').value.trim(),password:$('lSenha').value});if(error)return toast(error.message==='Invalid login credentials'?'E-mail ou senha incorretos.':error.message,true);iniciar()};
+$('bCriar').onclick=async()=>{const email=$('lEmail').value.trim(),password=$('lSenha').value;if(!email||password.length<6)return toast('Preencha o e-mail e uma senha com 6+ caracteres.',true);
+  const {data,error}=await sb.auth.signUp({email,password,options:{emailRedirectTo:location.href.split('#')[0]}});if(error)return toast(error.message,true);
+  if(data.session)iniciar();else toast('Enviamos um link de confirmação para o seu e-mail.')};
+$('bEsqueci').onclick=async()=>{const email=$('lEmail').value.trim();if(!email)return toast('Digite seu e-mail primeiro.',true);
+  const {error}=await sb.auth.resetPasswordForEmail(email,{redirectTo:location.href.split('#')[0]});toast(error?error.message:'Enviamos um link para redefinir a senha.',!!error)};
+sb.auth.onAuthStateChange(async(ev)=>{if(ev==='PASSWORD_RECOVERY'){const nova=prompt('Digite a nova senha (6+ caracteres):');if(nova){const {error}=await sb.auth.updateUser({password:nova});toast(error?error.message:'Senha alterada ✅',!!error)}}});
+$('sair').onclick=async()=>{await sb.auth.signOut();$('sair').classList.add('hidden');mostrar('vLogin')};
+
+async function iniciar(){
+  const {data:{session}}=await sb.auth.getSession();
+  if(!session){mostrar('vLogin');return}
+  $('sair').classList.remove('hidden');
+  const {data:adm}=await sb.rpc('is_admin');
+  if(!adm){mostrar('vSemAcesso');return}
+  await carregarEventos();
+  const cod=new URLSearchParams(location.hash.slice(1)).get('ev');
+  const ev=cod&&eventos.find(e=>e.codigo===cod);
+  ev?abrirEvento(ev.id):mostrar('vLista');
+}
+
+// ---------- eventos ----------
+async function carregarEventos(){
+  try{
+    const {data}=await tentar(()=>sb.from('eventos').select('*, inscricoes(count)').order('data_evento',{ascending:false,nullsFirst:false}));
+    eventos=data||[];
+  }catch(e){toast('Erro ao carregar: '+erroMsg(e),true)}
+  const box=$('listaEventos');
+  if(!eventos.length){box.innerHTML='<div class="card muted">Nenhum evento ainda. Toque em "+ Novo evento" para criar o primeiro.</div>';return}
+  box.innerHTML=eventos.map(ev=>{const [s,c]=situacao(ev);const n=ev.inscricoes?.[0]?.count||0;
+    return `<div class="card evento" onclick="abrirEvento('${ev.id}')"><div class="linha"><b style="font-size:17px">${esc(ev.nome)}</b><span class="badge ${c}">${s}</span></div>
+    <div class="muted" style="margin-top:6px">📅 ${dataHora(ev.data_evento)} · 🏟️ ${esc(ev.setor)}<br>👥 ${n} inscritos · 🎟️ ${ev.qtd_ganhadores} sorteados · ⏳ até ${dataHora(ev.inscricoes_ate)}</div></div>`}).join('');
+}
+function irLista(){if(!$('sair').classList.contains('hidden')){history.replaceState(null,'',location.pathname);carregarEventos();mostrar('vLista')}}
+
+// ---------- formulário ----------
+$('bNovo').onclick=()=>abrirForm(null);
+$('fCancelar').onclick=()=>editando?abrirEvento(editando.id):mostrar('vLista');
+$('fLinks').oninput=()=>{const n=$('fLinks').value.split('\n').map(s=>s.trim()).filter(Boolean).length;$('fLinksInfo').textContent=n?`${n} link(s) de ingresso. Cada ganhador recebe um, na ordem do sorteio.`:'Cada ganhador recebe um link, na ordem do sorteio. Pode deixar para colocar depois.'};
+function abrirForm(ev){
+  editando=ev;$('fTitulo').textContent=ev?'Editar evento':'Novo evento';
+  $('fNome').value=ev?.nome||'';$('fData').value=paraInput(ev?.data_evento);$('fSetor').value=ev?.setor||'Oeste Superior';
+  $('fAte').value=paraInput(ev?.inscricoes_ate);$('fIdade').value=ev?.idade_minima??18;$('fLinks').value=(ev?.links_ingressos||[]).join('\n');
+  $('fQtd').value=ev?.qtd_ganhadores||'';$('fMsg').value=ev?.mensagem||MSG_PADRAO;$('fLinks').oninput();mostrar('vForm');
+}
+$('fSalvar').onclick=async()=>{
+  const ls=$('fLinks').value.split('\n').map(s=>s.trim()).filter(Boolean);
+  const qtd=parseInt($('fQtd').value)||ls.length;
+  const d={nome:$('fNome').value.trim(),data_evento:deInput($('fData').value),setor:$('fSetor').value.trim()||'Oeste Superior',
+    inscricoes_ate:deInput($('fAte').value),idade_minima:parseInt($('fIdade').value)||0,links_ingressos:ls,qtd_ganhadores:qtd,mensagem:$('fMsg').value.trim()||MSG_PADRAO};
+  if(!d.nome)return toast('Informe o jogo.',true);
+  if(!d.data_evento)return toast('Informe a data e hora do jogo.',true);
+  if(!d.inscricoes_ate)return toast('Informe até quando vão as inscrições.',true);
+  if(!qtd||qtd<1)return toast('Informe quantas pessoas serão sorteadas.',true);
+  if(ls.length&&ls.length<qtd&&!confirm(`Você colocou ${ls.length} link(s) para ${qtd} sorteados. Os que ficarem sem link podem receber depois. Salvar assim?`))return;
+  const b=$('fSalvar');b.disabled=true;
+  try{
+    if(editando){await tentar(()=>sb.from('eventos').update(d).eq('id',editando.id));toast('Evento atualizado ✅');await carregarEventos();abrirEvento(editando.id)}
+    else{const {data}=await tentar(()=>sb.from('eventos').insert(d).select().single());toast('Evento criado ✅');await carregarEventos();abrirEvento(data.id)}
+  }catch(e){toast('Erro ao salvar: '+erroMsg(e),true)}finally{b.disabled=false}
+};
+
+// ---------- detalhe ----------
+async function abrirEvento(id){
+  atual=eventos.find(e=>e.id===id);if(!atual)return;
+  history.replaceState(null,'','#ev='+atual.codigo);
+  mostrar('vDetalhe');renderCabecalho();await carregarInscritos();
+}
+function renderCabecalho(){
+  const ev=atual,[s,c]=situacao(ev);
+  $('dNome').textContent=ev.nome;$('dBadge').innerHTML=`<span class="badge ${c}">${s}</span>`;
+  $('dInfo').innerHTML=`📅 ${dataHora(ev.data_evento)} · 🏟️ ${esc(ev.setor)}<br>⏳ Inscrições até ${dataHora(ev.inscricoes_ate)}${ev.idade_minima?` · +${ev.idade_minima} anos`:''}`;
+  $('dQtd').textContent=ev.qtd_ganhadores;$('dLinks').textContent=links(ev).length;$('dLink').value=linkInscricao(ev);
+  $('dEncerrar').classList.toggle('hidden',!(ev.status==='aberto'&&new Date()<new Date(ev.inscricoes_ate)));
+  $('cSortear').classList.toggle('hidden',ev.status==='sorteado');$('cResultado').classList.toggle('hidden',ev.status!=='sorteado');
+}
+async function carregarInscritos(){
+  try{const {data}=await tentar(()=>sb.from('inscricoes').select('*').eq('evento_id',atual.id).order('created_at',{ascending:false}));inscritos=data||[]}
+  catch(e){toast('Erro ao carregar inscritos: '+erroMsg(e),true)}
+  $('dInscritos').textContent=inscritos.length;
+  await carregarFotos();renderResultado();renderInscritos();
+}
+async function carregarFotos(){
+  const faltam=inscritos.map(i=>i.selfie_path).filter(p=>!fotos[p]);
+  for(let i=0;i<faltam.length;i+=100){
+    const {data}=await sb.storage.from('selfies').createSignedUrls(faltam.slice(i,i+100),60*60*6);
+    (data||[]).forEach(r=>{if(r.signedUrl)fotos[r.path]=r.signedUrl});
+  }
+}
+function fotoHtml(p){const u=fotos[p.selfie_path]||'';return `<img class="foto" loading="lazy" src="${u}" alt="" onclick="verFoto(event,'${p.selfie_path}')">`}
+function verFoto(e,p){e.stopPropagation();if(!fotos[p])return;$('ovImg').src=fotos[p];$('ovFoto').classList.remove('hidden')}
+function dadosPessoa(p){return `${idade(p.data_nascimento)} anos · CPF ${fmtCpf(p.cpf)}<br>📱 ${fmtZap(p.whatsapp)}`}
+
+function renderInscritos(){
+  const q=$('busca').value.trim().toLowerCase(),qd=q.replace(/\D/g,'');
+  const lista=inscritos.filter(p=>!q||p.nome.toLowerCase().includes(q)||(qd&&(p.cpf.includes(qd)||p.whatsapp.includes(qd))));
+  const tag=p=>p.resultado==='ganhador'?'<span class="tag t-sup" style="background:#3b331d">🏆 ganhador</span>':p.resultado==='suplente'?'<span class="tag t-sup">suplente</span>':p.resultado==='desclassificado'?'<span class="tag t-desc">desclassificado</span>':'';
+  $('listaInscritos').innerHTML=lista.length?lista.map(p=>`<div class="pessoa">${fotoHtml(p)}<div class="pinfo"><b>${esc(p.nome)}${tag(p)}</b><small>${dadosPessoa(p)}<br>Inscrito em ${dataHora(p.created_at)}</small></div></div>`).join('')
+    :`<p class="muted">${inscritos.length?'Nada encontrado.':'Ainda não há inscritos. Mande o link no grupo!'}</p>`;
+}
+$('busca').oninput=renderInscritos;
+
+// ---------- mensagem do vencedor ----------
+function mensagem(p){
+  return (atual.mensagem||MSG_PADRAO).replaceAll('{nome}',primeiro(p.nome)).replaceAll('{nome_completo}',p.nome).replaceAll('{jogo}',atual.nome)
+    .replaceAll('{data}',dia(atual.data_evento)).replaceAll('{hora}',hora(atual.data_evento)).replaceAll('{setor}',atual.setor).replaceAll('{link}',p.ingresso_link||'(link será enviado em seguida)');
+}
+function renderResultado(){
+  if(atual.status!=='sorteado')return;
+  const gan=inscritos.filter(p=>p.resultado==='ganhador').sort((a,b)=>a.ordem-b.ordem);
+  const sup=inscritos.filter(p=>p.resultado==='suplente').sort((a,b)=>a.ordem-b.ordem);
+  const desc=inscritos.filter(p=>p.resultado==='desclassificado');
+  $('listaGanhadores').innerHTML=gan.map(p=>`<div class="pessoa ganhador"><div class="ordem">${p.ordem}</div>${fotoHtml(p)}<div class="pinfo"><b>${esc(p.nome)}</b><small>${dadosPessoa(p)}</small>
+    ${p.ingresso_link?`<small>🎟️ <a href="${esc(p.ingresso_link)}" target="_blank" style="color:var(--ouro2)">ingresso</a></small>`:'<span class="semlink">⚠️ sem link de ingresso</span>'}
+    ${p.avisado_em?`<span class="avisado"> ✅ avisado ${dataHora(p.avisado_em)}</span>`:''}
+    <div class="pbtns"><button class="btn zap sm" onclick="avisar('${p.id}')">📲 Avisar no WhatsApp</button><button class="btn sm" onclick="copiar(mensagem(inscritos.find(x=>x.id==='${p.id}')))">Copiar msg</button><button class="btn perigo sm" onclick="desclassificar('${p.id}')">Desclassificar</button></div></div></div>`).join('')||'<p class="muted">Nenhum ganhador.</p>';
+  const semLink=gan.filter(p=>!p.ingresso_link).length,livres=linksLivres().length;
+  $('acoesRes').innerHTML=semLink&&livres?`<button class="btn ouro sm" onclick="distribuirLinks()">🎟️ Distribuir ${Math.min(semLink,livres)} link(s) pendente(s)</button>`:semLink?`<p class="ajuda">${semLink} ganhador(es) sem link. Toque em ✏️ Editar e cole mais links de ingresso.</p>`:'';
+  $('tSup').classList.toggle('hidden',!sup.length&&!desc.length);
+  $('listaSuplentes').innerHTML=sup.map(p=>`<div class="pessoa"><div class="ordem" style="font-size:20px">${p.ordem}</div>${fotoHtml(p)}<div class="pinfo"><b>${esc(p.nome)}</b><small>${dadosPessoa(p)}</small>
+    <div class="pbtns"><button class="btn ouro sm" onclick="promover('${p.id}')">⬆️ Promover a ganhador</button></div></div></div>`).join('')
+    +desc.map(p=>`<div class="pessoa" style="opacity:.55">${fotoHtml(p)}<div class="pinfo"><b>${esc(p.nome)}<span class="tag t-desc">desclassificado</span></b><small>${dadosPessoa(p)}</small></div></div>`).join('');
+}
+function linksLivres(){const usados=new Set(inscritos.filter(p=>p.resultado==='ganhador'&&p.ingresso_link).map(p=>p.ingresso_link.trim()));return links(atual).filter(l=>!usados.has(l))}
+async function avisar(id){
+  const p=inscritos.find(x=>x.id===id);
+  if(!p.ingresso_link&&!confirm('Este ganhador ainda não tem link de ingresso. Avisar mesmo assim?'))return;
+  abrirZap(p.whatsapp,mensagem(p));
+  const agora=new Date().toISOString();
+  const {error}=await sb.from('inscricoes').update({avisado_em:agora}).eq('id',id);
+  if(!error){p.avisado_em=agora;renderResultado()}
+}
+async function desclassificar(id){
+  const p=inscritos.find(x=>x.id===id);
+  if(!confirm(`Desclassificar ${p.nome}? O link de ingresso dele fica livre para um suplente.`))return;
+  try{await tentar(()=>sb.from('inscricoes').update({resultado:'desclassificado',ingresso_link:null}).eq('id',id));toast('Desclassificado. Agora promova um suplente.');await carregarInscritos()}
+  catch(e){toast(erroMsg(e),true)}
+}
+async function promover(id){
+  const p=inscritos.find(x=>x.id===id);if(!confirm(`Promover ${p.nome} a ganhador?`))return;
+  try{const {data}=await tentar(()=>sb.rpc('promover_suplente',{p_suplente:id,p_desclassificar:null}));
+    toast(data?'Promovido ✅ Já recebeu um link de ingresso.':'Promovido ✅ (sem link livre — adicione em Editar)');await carregarInscritos()}
+  catch(e){toast(erroMsg(e),true)}
+}
+async function distribuirLinks(){
+  const livres=linksLivres(),sem=inscritos.filter(p=>p.resultado==='ganhador'&&!p.ingresso_link).sort((a,b)=>a.ordem-b.ordem);
+  try{for(let i=0;i<Math.min(livres.length,sem.length);i++)await tentar(()=>sb.from('inscricoes').update({ingresso_link:livres[i]}).eq('id',sem[i].id));
+    toast('Links distribuídos ✅');await carregarInscritos()}catch(e){toast(erroMsg(e),true)}
+}
+
+// ---------- ações do evento ----------
+$('dCopiar').onclick=()=>copiar($('dLink').value);
+$('dConvite').onclick=()=>abrirZap('',`⚽ *VOU PRO MARACA* – Sorteio de ingressos!\n\n🏟️ *${atual.nome}*\n📅 ${dia(atual.data_evento)} às ${hora(atual.data_evento)}\n🎟️ ${atual.qtd_ganhadores} ingresso${atual.qtd_ganhadores>1?'s':''} – setor ${atual.setor}\n\n👉 Inscreva-se até ${dataHora(atual.inscricoes_ate)}:\n${linkInscricao(atual)}\n\nBoa sorte! 🍀`);
+$('dEditar').onclick=()=>abrirForm(atual);
+$('dAtualizar').onclick=async()=>{await carregarEventos();atual=eventos.find(e=>e.id===atual.id);renderCabecalho();await carregarInscritos();toast('Atualizado')};
+$('dEncerrar').onclick=async()=>{if(!confirm('Encerrar as inscrições agora? Ninguém mais conseguirá se inscrever.'))return;
+  try{await tentar(()=>sb.from('eventos').update({inscricoes_ate:new Date().toISOString()}).eq('id',atual.id));await carregarEventos();atual=eventos.find(e=>e.id===atual.id);renderCabecalho();toast('Inscrições encerradas')}catch(e){toast(erroMsg(e),true)}};
+$('dExcluir').onclick=async()=>{
+  if(!confirm(`Excluir o evento "${atual.nome}" com todos os ${inscritos.length} inscritos e selfies? Não tem como desfazer.`))return;
+  try{const paths=inscritos.map(i=>i.selfie_path);for(let i=0;i<paths.length;i+=100)await sb.storage.from('selfies').remove(paths.slice(i,i+100));
+    await tentar(()=>sb.from('eventos').delete().eq('id',atual.id));toast('Evento excluído');irLista()}catch(e){toast(erroMsg(e),true)}
+};
+$('dCsv').onclick=()=>{
+  const cab=['Ordem','Resultado','Nome','Nascimento','Idade','CPF','WhatsApp','Ingresso','Avisado em','Inscrito em'];
+  const lin=inscritos.slice().sort((a,b)=>(a.ordem??1e9)-(b.ordem??1e9)).map(p=>[p.ordem??'',p.resultado??'',p.nome,p.data_nascimento.split('-').reverse().join('/'),idade(p.data_nascimento),fmtCpf(p.cpf),fmtZap(p.whatsapp),p.ingresso_link??'',p.avisado_em?dataHora(p.avisado_em):'',dataHora(p.created_at)]);
+  const csv='﻿'+[cab,...lin].map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(';')).join('\n');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download=`vou-pro-maraca-${atual.nome.replace(/\W+/g,'-').toLowerCase()}.csv`;a.click();
+};
+$('bCopiarRes').onclick=()=>{
+  const gan=inscritos.filter(p=>p.resultado==='ganhador').sort((a,b)=>a.ordem-b.ordem);
+  copiar(`🏆 *Resultado – Vou pro Maraca*\n${atual.nome} · ${dia(atual.data_evento)}\n\n`+gan.map((p,i)=>`${i+1}. ${curto(p.nome)} – CPF ${cpfMask(p.cpf)}`).join('\n')+`\n\nOs vencedores serão avisados no privado. Parabéns! 🎉⚽`);
+};
+
+// ---------- sorteio ----------
+$('bSortear').onclick=async()=>{
+  if(!inscritos.length)return toast('Ainda não há inscritos.',true);
+  const sup=Math.max(0,parseInt($('sSuplentes').value)||0);
+  const aberto=new Date()<new Date(atual.inscricoes_ate);
+  if(!confirm(`${aberto?'⚠️ As inscrições ainda estão abertas e serão encerradas agora.\n\n':''}Sortear ${atual.qtd_ganhadores} ganhador(es) + ${sup} suplente(s) entre ${inscritos.length} inscritos?\n\nO sorteio só pode ser feito uma vez.`))return;
+  $('bSortear').disabled=true;$('ovTit').textContent='Sorteando…';$('ovSorteio').classList.remove('hidden');
+  let fim=false,vel=60;const nomes=inscritos.map(p=>p.nome);
+  (function gira(){if(fim)return;$('roleta').textContent=nomes[Math.floor(Math.random()*nomes.length)];vel=Math.min(vel*1.04,260);setTimeout(gira,vel)})();
+  try{
+    const [r]=await Promise.all([tentar(()=>sb.rpc('realizar_sorteio',{p_evento:atual.id,p_suplentes:sup}),1),new Promise(r=>setTimeout(r,3800))]);
+    fim=true;await carregarEventos();atual=eventos.find(e=>e.id===atual.id);await carregarInscritos();
+    const g=inscritos.filter(p=>p.resultado==='ganhador').sort((a,b)=>a.ordem-b.ordem);
+    $('ovTit').textContent='🎉 Ganhadores';$('roleta').innerHTML=g.map(p=>esc(curto(p.nome))).join('<br>');$('roleta').style.fontSize=g.length>6?'min(7vw,34px)':'';
+    setTimeout(()=>{$('ovSorteio').classList.add('hidden');$('roleta').style.fontSize='';renderCabecalho();renderResultado();$('cResultado').scrollIntoView({behavior:'smooth'})},3500);
+  }catch(e){fim=true;$('ovSorteio').classList.add('hidden');toast('Erro no sorteio: '+erroMsg(e),true)}
+  finally{$('bSortear').disabled=false}
+};
+$('bMaisSup').onclick=async()=>{
+  try{await tentar(()=>sb.rpc('sortear_suplente',{p_evento:atual.id}),1);toast('Novo suplente sorteado 🎲');await carregarInscritos()}catch(e){toast(erroMsg(e),true)}
+};
+
+iniciar();
+</script>
+</body>
+</html>

@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Vou pro Maraca – Inscrição</title>
+<meta name="description" content="Inscreva-se no sorteio de ingressos para o Maracanã">
+<meta property="og:title" content="Vou pro Maraca ⚽ Sorteio de ingressos">
+<meta property="og:description" content="Inscreva-se e concorra a um ingresso para o Maracanã!">
+<meta name="theme-color" content="#1f2124">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root{
+    --grafite:#1f2124; --grafite2:#2a2d31; --grafite3:#383c42; --linha:#44484f;
+    --ouro:#d4af37; --ouro2:#f1d27a; --texto:#f2f2f2; --suave:#a9adb4; --erro:#ff6b6b; --ok:#4cd28a;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--grafite);color:var(--texto);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:520px;margin:0 auto;padding:20px 18px 48px}
+  header{text-align:center;padding:18px 0 8px}
+  .logo{font-family:"Bebas Neue",Impact,sans-serif;font-size:52px;line-height:.9;letter-spacing:1px;margin:0;
+        background:linear-gradient(180deg,var(--ouro2),var(--ouro));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .logo small{display:block;font-size:17px;letter-spacing:4px;color:var(--suave);-webkit-text-fill-color:var(--suave);margin-top:6px}
+  .card{background:var(--grafite2);border:1px solid var(--linha);border-radius:18px;padding:18px;margin-top:16px}
+  .jogo{border-color:var(--ouro);background:linear-gradient(160deg,#2c2a22,var(--grafite2) 60%)}
+  .jogo h2{font-family:"Bebas Neue",Impact,sans-serif;font-size:34px;margin:0 0 6px;letter-spacing:.5px;color:var(--ouro2)}
+  .info{display:grid;grid-template-columns:auto 1fr;gap:6px 10px;font-size:15px;color:var(--texto)}
+  .info span:nth-child(odd){color:var(--suave)}
+  .aviso{font-size:13px;color:var(--suave);margin-top:10px}
+  label{display:block;font-size:14px;font-weight:600;margin:16px 0 6px}
+  input[type=text],input[type=tel]{width:100%;padding:14px;border-radius:12px;border:1px solid var(--linha);background:var(--grafite);color:var(--texto);font-size:17px;outline:none}
+  input:focus{border-color:var(--ouro)}
+  input.invalido{border-color:var(--erro)}
+  .dica{font-size:12.5px;color:var(--erro);margin-top:5px;min-height:0}
+  .selfie{margin-top:6px;border:2px dashed var(--linha);border-radius:16px;padding:16px;text-align:center;cursor:pointer;transition:.2s}
+  .selfie:hover{border-color:var(--ouro)}
+  .selfie img{width:160px;height:160px;object-fit:cover;border-radius:50%;border:3px solid var(--ouro);display:none;margin:0 auto 10px}
+  .selfie .ic{font-size:40px}
+  .selfie p{margin:6px 0 0;color:var(--suave);font-size:14px}
+  .check{display:flex;gap:10px;align-items:flex-start;font-size:13.5px;color:var(--suave);margin-top:18px;line-height:1.45}
+  .check input{width:22px;height:22px;accent-color:var(--ouro);flex:none;margin-top:1px}
+  button{font-family:inherit}
+  .btn{width:100%;margin-top:20px;padding:17px;border:0;border-radius:14px;font-size:18px;font-weight:700;cursor:pointer;
+       background:linear-gradient(180deg,var(--ouro2),var(--ouro));color:#1b1b1b;letter-spacing:.3px}
+  .btn:disabled{opacity:.55;cursor:default}
+  .centro{text-align:center}
+  .grande{font-size:64px;margin:8px 0}
+  h3{margin:6px 0 8px;font-size:22px}
+  .muted{color:var(--suave);font-size:15px;line-height:1.5}
+  .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(120px);background:#111;color:#fff;border:1px solid var(--linha);
+         padding:13px 18px;border-radius:12px;font-size:14.5px;max-width:92vw;transition:.3s;z-index:9;box-shadow:0 8px 24px rgba(0,0,0,.4)}
+  .toast.on{transform:translateX(-50%) translateY(0)}
+  .toast.erro{border-color:var(--erro)}
+  .spinner{display:inline-block;width:18px;height:18px;border:3px solid rgba(0,0,0,.25);border-top-color:#1b1b1b;border-radius:50%;animation:g .8s linear infinite;vertical-align:-3px;margin-right:8px}
+  @keyframes g{to{transform:rotate(360deg)}}
+  .hidden{display:none!important}
+  footer{text-align:center;color:#6c7078;font-size:12px;margin-top:28px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header><h1 class="logo">VOU PRO MARACA<small>SORTEIO DE INGRESSOS</small></h1></header>
+
+  <div id="carregando" class="card centro muted">Carregando sorteio…</div>
+
+  <div id="erroTela" class="card centro hidden">
+    <div class="grande">⚠️</div><h3 id="erroTitulo">Link inválido</h3>
+    <p class="muted" id="erroTexto">Confira o link recebido no grupo do WhatsApp.</p>
+  </div>
+
+  <div id="eventoCard" class="card jogo hidden">
+    <h2 id="evNome"></h2>
+    <div class="info">
+      <span>📅 Jogo</span><b id="evData"></b>
+      <span>🏟️ Setor</span><b id="evSetor"></b>
+      <span>🎟️ Ingressos</span><b id="evQtd"></b>
+      <span>⏳ Inscrições até</span><b id="evAte"></b>
+    </div>
+    <div class="aviso" id="evIdade"></div>
+  </div>
+
+  <form id="form" class="card hidden" novalidate>
+    <label for="nome">Nome completo</label>
+    <input type="text" id="nome" autocomplete="name" placeholder="Seu nome e sobrenome">
+    <div class="dica" id="d-nome"></div>
+
+    <label for="nasc">Data de nascimento</label>
+    <input type="tel" id="nasc" inputmode="numeric" placeholder="dd/mm/aaaa" maxlength="10">
+    <div class="dica" id="d-nasc"></div>
+
+    <label for="cpf">CPF</label>
+    <input type="tel" id="cpf" inputmode="numeric" placeholder="000.000.000-00" maxlength="14">
+    <div class="dica" id="d-cpf"></div>
+
+    <label for="zap">WhatsApp (com DDD)</label>
+    <input type="tel" id="zap" inputmode="numeric" autocomplete="tel-national" placeholder="(21) 99999-9999" maxlength="15">
+    <div class="dica" id="d-zap"></div>
+
+    <label>Selfie</label>
+    <div class="selfie" id="selfieBox">
+      <img id="selfiePrev" alt="Sua selfie">
+      <div class="ic" id="selfieIc">🤳</div>
+      <p id="selfieTxt">Toque aqui para tirar uma selfie<br><small>Rosto bem visível, sem óculos escuros ou boné</small></p>
+    </div>
+    <input type="file" id="selfie" accept="image/*" capture="user" class="hidden">
+    <div class="dica" id="d-selfie"></div>
+
+    <label class="check"><input type="checkbox" id="aceite">
+      <span>Autorizo o uso dos meus dados (nome, nascimento, CPF, WhatsApp e selfie) somente para este sorteio, para contato caso eu seja sorteado e para emissão/validação do ingresso, conforme a LGPD.</span></label>
+    <div class="dica" id="d-aceite"></div>
+
+    <button class="btn" id="enviar" type="submit">Quero ir pro Maraca! ⚽</button>
+  </form>
+
+  <div id="sucesso" class="card centro hidden">
+    <div class="grande">🎉</div>
+    <h3>Inscrição confirmada!</h3>
+    <p class="muted" id="sucessoTxt"></p>
+    <p class="muted">Boa sorte e fique de olho no grupo! 🍀</p>
+  </div>
+
+  <footer>Vou pro Maraca · seus dados são usados apenas para este sorteio</footer>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const SUPABASE_URL = 'https://zqzijrbfugleqajcqkrt.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_n9zvUxjFlOT79QmDNQ5tBA_AunmJBaD';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY, { auth: { persistSession: false } });
+
+const $ = id => document.getElementById(id);
+const codigo = new URLSearchParams(location.search).get('e') || '';
+let evento = null, selfieBlob = null;
+
+function toast(msg, erro){ const t=$('toast'); t.textContent=msg; t.className='toast on'+(erro?' erro':''); clearTimeout(t._h); t._h=setTimeout(()=>t.className='toast',4200); }
+function fmtData(iso){ if(!iso) return '—'; const d=new Date(iso); return d.toLocaleDateString('pt-BR',{timeZone:'America/Sao_Paulo',weekday:'short',day:'2-digit',month:'2-digit'})+' às '+d.toLocaleTimeString('pt-BR',{timeZone:'America/Sao_Paulo',hour:'2-digit',minute:'2-digit'}); }
+function guardar(k,v){ try{ localStorage.setItem(k,v) }catch(e){} }
+function ler(k){ try{ return localStorage.getItem(k) }catch(e){ return null } }
+function mostrarErro(t,x){ $('carregando').classList.add('hidden'); $('erroTitulo').textContent=t; $('erroTexto').textContent=x; $('erroTela').classList.remove('hidden'); }
+const so = v => v.replace(/\D/g,'');
+
+// ---------- máscaras ----------
+$('cpf').addEventListener('input', e=>{ let v=so(e.target.value).slice(0,11);
+  v=v.replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})(\d{1,2})$/,'$1-$2'); e.target.value=v; });
+$('zap').addEventListener('input', e=>{ let v=so(e.target.value).slice(0,11);
+  if(v.length>10) v=v.replace(/(\d{2})(\d{5})(\d{0,4})/,'($1) $2-$3'); else if(v.length>6) v=v.replace(/(\d{2})(\d{4})(\d{0,4})/,'($1) $2-$3'); else if(v.length>2) v=v.replace(/(\d{2})(\d+)/,'($1) $2'); e.target.value=v; });
+$('nasc').addEventListener('input', e=>{ let v=so(e.target.value).slice(0,8);
+  if(v.length>4) v=v.replace(/(\d{2})(\d{2})(\d+)/,'$1/$2/$3'); else if(v.length>2) v=v.replace(/(\d{2})(\d+)/,'$1/$2'); e.target.value=v; });
+
+// ---------- validações ----------
+function cpfValido(c){ c=so(c); if(c.length!==11||/^(\d)\1{10}$/.test(c)) return false;
+  let s=0; for(let i=0;i<9;i++) s+=+c[i]*(10-i); let r=(s*10)%11; if(r===10) r=0; if(r!==+c[9]) return false;
+  s=0; for(let i=0;i<10;i++) s+=+c[i]*(11-i); r=(s*10)%11; if(r===10) r=0; return r===+c[10]; }
+function dataNasc(v){ const m=v.match(/^(\d{2})\/(\d{2})\/(\d{4})$/); if(!m) return null;
+  const d=new Date(+m[3],+m[2]-1,+m[1]); if(d.getDate()!==+m[1]||d.getMonth()!==+m[2]-1||+m[3]<1900||d>new Date()) return null;
+  return {iso:`${m[3]}-${m[2]}-${m[1]}`, data:d}; }
+function idade(d){ const h=new Date(); let i=h.getFullYear()-d.getFullYear(); const mm=h.getMonth()-d.getMonth(); if(mm<0||(mm===0&&h.getDate()<d.getDate())) i--; return i; }
+function marca(campo,msg){ $('d-'+campo).textContent=msg||''; const el=$(campo==='aceite'?'aceite':campo); if(el&&el.tagName==='INPUT'&&el.type!=='checkbox') el.classList.toggle('invalido',!!msg); return !msg; }
+
+function validar(){
+  let ok=true;
+  const nome=$('nome').value.trim().replace(/\s+/g,' ');
+  ok = marca('nome', nome.length<5||!nome.includes(' ') ? 'Informe nome e sobrenome.' : '') && ok;
+  const n=dataNasc($('nasc').value);
+  let mn=''; if(!n) mn='Data inválida. Use dd/mm/aaaa.'; else if(evento && idade(n.data)<evento.idade_minima) mn=`Sorteio apenas para maiores de ${evento.idade_minima} anos.`;
+  ok = marca('nasc', mn) && ok;
+  ok = marca('cpf', cpfValido($('cpf').value)?'':'CPF inválido.') && ok;
+  const z=so($('zap').value); ok = marca('zap', (z.length===10||z.length===11)?'':'Informe DDD + número.') && ok;
+  ok = marca('selfie', selfieBlob?'':'Tire uma selfie para participar.') && ok;
+  ok = marca('aceite', $('aceite').checked?'':'É preciso autorizar o uso dos dados.') && ok;
+  return ok;
+}
+
+// ---------- selfie (reduz a foto antes de enviar) ----------
+$('selfieBox').onclick = ()=> $('selfie').click();
+$('selfie').addEventListener('change', async e=>{
+  const f=e.target.files[0]; if(!f) return;
+  try{
+    selfieBlob = await reduzir(f, 900, .82);
+    $('selfiePrev').src = URL.createObjectURL(selfieBlob); $('selfiePrev').style.display='block';
+    $('selfieIc').style.display='none'; $('selfieTxt').innerHTML='Ficou boa! Toque para tirar outra';
+    marca('selfie','');
+  }catch(err){ selfieBlob=null; toast('Não consegui ler essa foto. Tente de novo.',true); }
+});
+function reduzir(file,max,q){ return new Promise((res,rej)=>{
+  const img=new Image(); img.onload=()=>{ let {width:w,height:h}=img; const s=Math.min(1,max/Math.max(w,h)); w=Math.round(w*s); h=Math.round(h*s);
+    const c=document.createElement('canvas'); c.width=w; c.height=h; c.getContext('2d').drawImage(img,0,0,w,h);
+    c.toBlob(b=> b?res(b):rej(new Error('blob')),'image/jpeg',q); URL.revokeObjectURL(img.src); };
+  img.onerror=rej; img.src=URL.createObjectURL(file); }); }
+
+async function tentar(fn, vezes=3){ let ult; for(let i=0;i<vezes;i++){ try{ return await fn(); }catch(e){ ult=e; if(e && e.naoRepetir) throw e; await new Promise(r=>setTimeout(r,800*(i+1))); } } throw ult; }
+function uuid(){ return (crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>{const r=Math.random()*16|0;return (c==='x'?r:(r&3|8)).toString(16)})); }
+
+// ---------- envio ----------
+$('form').addEventListener('submit', async e=>{
+  e.preventDefault(); if(!validar()){ toast('Confira os campos destacados.',true); return; }
+  const b=$('enviar'); b.disabled=true; b.innerHTML='<span class="spinner"></span>Enviando…';
+  const id=uuid(); const path=`${evento.id}/${id}.jpg`;
+  try{
+    await tentar(async()=>{ const {error}=await sb.storage.from('selfies').upload(path, selfieBlob, {contentType:'image/jpeg', upsert:false});
+      if(error && !/exists|Duplicate/i.test(error.message)) throw error; });
+    await tentar(async()=>{ const {error}=await sb.rpc('inscrever',{ p_codigo:codigo, p_id:id, p_nome:$('nome').value.trim(),
+        p_nascimento:dataNasc($('nasc').value).iso, p_cpf:so($('cpf').value), p_whatsapp:so($('zap').value), p_selfie_path:path });
+      if(error){ const er=new Error(error.message); if(!/fetch|network|timeout/i.test(error.message)) er.naoRepetir=true; throw er; } });
+    guardar('vpm_'+codigo, $('zap').value);
+    mostrarSucesso($('zap').value);
+  }catch(err){
+    toast(limpa(err.message)||'Não foi possível enviar. Verifique sua internet e tente de novo.', true);
+    b.disabled=false; b.textContent='Quero ir pro Maraca! ⚽';
+  }
+});
+function limpa(m){ return (m||'').replace(/^.*?ERROR:\s*/,''); }
+function mostrarSucesso(zap){
+  $('form').classList.add('hidden'); $('sucesso').classList.remove('hidden');
+  $('sucessoTxt').innerHTML = `O sorteio acontece após o encerramento das inscrições (<b>${fmtData(evento.inscricoes_ate)}</b>).<br>Se você for sorteado, vamos te avisar no WhatsApp <b>${zap}</b>.`;
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// ---------- carregar evento ----------
+(async()=>{
+  if(!codigo){ mostrarErro('Link inválido','Abra o link de inscrição enviado no grupo do WhatsApp.'); return; }
+  try{
+    const {data,error}=await tentar(()=>sb.rpc('dados_evento',{p_codigo:codigo}).then(r=>{ if(r.error) throw r.error; return r; }));
+    if(error||!data||!data.length){ mostrarErro('Sorteio não encontrado','Confira o link recebido no grupo do WhatsApp.'); return; }
+    evento=data[0];
+  }catch(e){ mostrarErro('Sem conexão','Não consegui carregar o sorteio. Verifique sua internet e recarregue a página.'); return; }
+  $('carregando').classList.add('hidden');
+  $('evNome').textContent=evento.nome; $('evData').textContent=fmtData(evento.data_evento);
+  $('evSetor').textContent=evento.setor; $('evQtd').textContent=`${evento.qtd_ganhadores} ${evento.qtd_ganhadores>1?'sorteados':'sorteado'}`;
+  $('evAte').textContent=fmtData(evento.inscricoes_ate);
+  $('evIdade').textContent = evento.idade_minima>0 ? `Somente maiores de ${evento.idade_minima} anos. Uma inscrição por CPF.` : 'Uma inscrição por CPF.';
+  $('eventoCard').classList.remove('hidden');
+  if(evento.sorteado){ mostrarErro('Sorteio realizado! 🏆','Este sorteio já aconteceu. Os vencedores foram avisados pelo WhatsApp.'); return; }
+  if(!evento.aberto){ mostrarErro('Inscrições encerradas','O prazo de inscrição deste sorteio terminou. Aguarde o resultado no grupo!'); return; }
+  const ja=ler('vpm_'+codigo); if(ja){ mostrarSucesso(ja); return; }
+  $('form').classList.remove('hidden');
+})();
+</script>
+</body>
+</html>
