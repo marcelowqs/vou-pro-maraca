@@ -45,6 +45,7 @@
   .btn{width:100%;margin-top:20px;padding:17px;border:0;border-radius:14px;font-size:18px;font-weight:700;cursor:pointer;
        background:linear-gradient(180deg,var(--ouro2),var(--ouro));color:#1b1b1b;letter-spacing:.3px}
   .btn:disabled{opacity:.55;cursor:default}
+  .btn.zap{background:#25d366;color:#0b2e17;margin-top:14px}
   .centro{text-align:center}
   .grande{font-size:64px;margin:8px 0}
   h3{margin:6px 0 8px;font-size:22px}
@@ -119,6 +120,13 @@
     <h3>Inscrição confirmada!</h3>
     <p class="muted" id="sucessoTxt"></p>
     <p class="muted">Boa sorte e fique de olho no grupo! 🍀</p>
+  </div>
+
+  <div id="conviteCard" class="card centro hidden" style="border-color:#2f6b45">
+    <div style="font-size:40px">🤝</div>
+    <h3>Chame a galera!</h3>
+    <p class="muted">Convide seus amigos para o grupo oficial das Lojas do Flamengo. Quanto mais gente, mais sorteios! 🔴⚫</p>
+    <button class="btn zap" id="convidar" type="button">📲 Convidar amigos</button>
   </div>
 
   <footer>Vou pro Maraca · seus dados são usados apenas para este sorteio</footer>
@@ -205,6 +213,7 @@ $('form').addEventListener('submit', async e=>{
         p_nascimento:dataNasc($('nasc').value).iso, p_cpf:so($('cpf').value), p_whatsapp:so($('zap').value), p_selfie_path:path });
       if(error){ const er=new Error(error.message); if(!/fetch|network|timeout/i.test(error.message)) er.naoRepetir=true; throw er; } });
     guardar('vpm_'+codigo, $('zap').value);
+    guardar('vpm_nome', $('nome').value.trim().split(/\s+/)[0].replace(/^./,c=>c.toUpperCase()));
     mostrarSucesso($('zap').value);
   }catch(err){
     toast(limpa(err.message)||'Não foi possível enviar. Verifique sua internet e tente de novo.', true);
@@ -216,6 +225,20 @@ function mostrarSucesso(zap){
   $('form').classList.add('hidden'); $('sucesso').classList.remove('hidden');
   $('sucessoTxt').innerHTML = `O sorteio acontece após o encerramento das inscrições (<b>${fmtData(evento.inscricoes_ate)}</b>).<br>Se você for sorteado, vamos te avisar no WhatsApp <b>${zap}</b>.`;
   window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// ---------- convidar amigos para o grupo ----------
+let linkGrupo=null;
+function mensagemConvite(){
+  const nome=ler('vpm_nome');
+  const abertura = nome ? `Fala! 👋 *${nome}* está te convidando` : 'Fala! 👋 Você foi convidado';
+  return `${abertura} para entrar no *grupo oficial das Lojas do Flamengo* no WhatsApp! 🔴⚫\n\n`+
+    `Lá dentro rola o *Vou pro Maraca*, o sorteio de ingressos para jogos no Maracanã. 🎟️⚽\n\n`+
+    `Entra no grupo por este link e participe do próximo sorteio:\n${linkGrupo}`;
+}
+$('convidar').onclick=()=>{ if(linkGrupo) window.open('https://wa.me/?text='+encodeURIComponent(mensagemConvite()),'_blank'); };
+async function carregarConvite(){
+  try{ const {data}=await sb.rpc('link_grupo',{p_codigo:codigo}); if(data){ linkGrupo=data; $('conviteCard').classList.remove('hidden'); } }catch(e){}
 }
 
 // ---------- carregar evento ----------
@@ -232,6 +255,7 @@ function mostrarSucesso(zap){
   $('evAte').textContent=fmtData(evento.inscricoes_ate);
   $('evIdade').textContent = evento.idade_minima>0 ? `Somente maiores de ${evento.idade_minima} anos. Uma inscrição por CPF.` : 'Uma inscrição por CPF.';
   $('eventoCard').classList.remove('hidden');
+  carregarConvite();
   if(evento.sorteado){ mostrarErro('Sorteio realizado! 🏆','Este sorteio já aconteceu. Os vencedores foram avisados pelo WhatsApp.'); return; }
   if(!evento.aberto){ mostrarErro('Inscrições encerradas','O prazo de inscrição deste sorteio terminou. Aguarde o resultado no grupo!'); return; }
   const ja=ler('vpm_'+codigo); if(ja){ mostrarSucesso(ja); return; }

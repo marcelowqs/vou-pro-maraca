@@ -108,6 +108,9 @@
     <label>Links dos ingressos (um por linha)</label>
     <textarea id="fLinks" placeholder="https://...&#10;https://..."></textarea>
     <div class="ajuda" id="fLinksInfo">Cada ganhador recebe um link, na ordem do sorteio. Pode deixar para colocar depois.</div>
+    <label>Link de convite do grupo do WhatsApp</label>
+    <input id="fGrupo" placeholder="https://chat.whatsapp.com/...">
+    <div class="ajuda">Usado no botão "Convidar amigos" da página de inscrição. Fica salvo para os próximos eventos.</div>
     <label>Quantidade de sorteados</label><input id="fQtd" type="number" min="1" max="500" placeholder="Ex.: 5 ou 10">
     <label>Mensagem para o vencedor</label>
     <textarea id="fMsg" style="min-height:150px"></textarea>
@@ -242,13 +245,15 @@ function abrirForm(ev){
   editando=ev;$('fTitulo').textContent=ev?'Editar evento':'Novo evento';
   $('fNome').value=ev?.nome||'';$('fData').value=paraInput(ev?.data_evento);$('fSetor').value=ev?.setor||'Oeste Superior';
   $('fAte').value=paraInput(ev?.inscricoes_ate);$('fIdade').value=ev?.idade_minima??18;$('fLinks').value=(ev?.links_ingressos||[]).join('\n');
+  $('fGrupo').value=ev?ev.link_grupo||'':(eventos.find(e=>e.link_grupo)?.link_grupo||'');
   $('fQtd').value=ev?.qtd_ganhadores||'';$('fMsg').value=ev?.mensagem||MSG_PADRAO;$('fLinks').oninput();mostrar('vForm');
 }
 $('fSalvar').onclick=async()=>{
   const ls=$('fLinks').value.split('\n').map(s=>s.trim()).filter(Boolean);
   const qtd=parseInt($('fQtd').value)||ls.length;
   const d={nome:$('fNome').value.trim(),data_evento:deInput($('fData').value),setor:$('fSetor').value.trim()||'Oeste Superior',
-    inscricoes_ate:deInput($('fAte').value),idade_minima:parseInt($('fIdade').value)||0,links_ingressos:ls,qtd_ganhadores:qtd,mensagem:$('fMsg').value.trim()||MSG_PADRAO};
+    inscricoes_ate:deInput($('fAte').value),idade_minima:parseInt($('fIdade').value)||0,links_ingressos:ls,qtd_ganhadores:qtd,mensagem:$('fMsg').value.trim()||MSG_PADRAO,link_grupo:$('fGrupo').value.trim()||null};
+  if(d.link_grupo&&!/^https:\/\/chat\.whatsapp\.com\//.test(d.link_grupo)&&!confirm('O link do grupo normalmente começa com https://chat.whatsapp.com/ — salvar assim mesmo?'))return;
   if(!d.nome)return toast('Informe o jogo.',true);
   if(!d.data_evento)return toast('Informe a data e hora do jogo.',true);
   if(!d.inscricoes_ate)return toast('Informe até quando vão as inscrições.',true);
