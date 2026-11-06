@@ -17,10 +17,10 @@
 (function(){
 const ate=new Date(Date.now()+5*86400000); ate.setHours(23,59,0,0);
 const jogo=new Date(Date.now()+7*86400000); jogo.setHours(19,0,0,0);
-const ev={id:'demo',nome:'Flamengo x Palmeiras',premio:'Ingresso',data_evento:jogo.toISOString(),inscricoes_ate:ate.toISOString(),qtd_ganhadores:5,idade_minima:18,setor:'Oeste Superior',aberto:true,sorteado:false};
+const ev={id:'demo',nome:'Flamengo x Palmeiras',premio:'Ingresso',data_evento:jogo.toISOString(),inscricoes_ate:ate.toISOString(),qtd_ganhadores:6,idade_minima:18,setor:'Oeste Superior',aberto:true,sorteado:false};
 const ok=d=>new Promise(r=>setTimeout(()=>r({data:d,error:null}),350));
 window.supabase={createClient(){return{
-  rpc(n,a){ window.__last=[n,a]; if(n==='dados_evento')return ok([ev]); if(n==='config_evento')return ok({link_grupo:'https://chat.whatsapp.com/EXEMPLO',convites_minimos:5}); return ok('ok'); },
+  rpc(n,a){ window.__last=[n,a]; if(n==='dados_evento')return ok([ev]); if(n==='meus_numeros')return ok({numeros:3,amigos:2,posicao:2,lider:5}); if(n==='config_evento')return ok({link_grupo:'https://whatsapp.com/channel/EXEMPLO',convites_minimos:5,qtd_aniversariantes:1,mes_aniversario:jogo.getMonth()+1,premio_convites:'Assistir ao jogo no camarote das Lojas Oficiais do Flamengo – Setor Oeste'}); return ok('ok'); },
   storage:{from(){return{upload(){return ok(null).then(()=>({error:null}))}}}}
 }}};
 })();
@@ -101,6 +101,8 @@ window.supabase={createClient(){return{
   .btn.grupo.destaque{font-size:17px;font-weight:800;padding:16px 14px;margin:0 0 16px;animation:pulsa 2.2s ease-in-out infinite;box-shadow:0 0 0 0 rgba(37,211,102,.6)}
   .btn.grupo small{display:block;font-size:12.5px;font-weight:600;margin-top:3px;opacity:.85}
   @keyframes pulsa{0%{box-shadow:0 0 0 0 rgba(37,211,102,.55)}70%{box-shadow:0 0 0 14px rgba(37,211,102,0)}100%{box-shadow:0 0 0 0 rgba(37,211,102,0)}}
+  .obs{font-size:12.5px;color:#ffe08a;margin-top:6px;line-height:1.4}
+  .ranking{margin-top:12px;padding:10px 12px;border-radius:10px;background:rgba(255,206,84,.15);color:#ffe08a;font-size:14px;line-height:1.45}
   .hidden{display:none!important}
   footer{text-align:center;color:#8fa8cc;font-size:12px;margin-top:28px}
 </style>
@@ -116,12 +118,12 @@ window.supabase={createClient(){return{
 
   <div id="erroTela" class="card centro hidden">
     <div class="grande">⚠️</div><h3 id="erroTitulo">Link inválido</h3>
-    <p class="muted" id="erroTexto">Confira o link recebido no grupo do WhatsApp.</p>
+    <p class="muted" id="erroTexto">Confira o link recebido no WhatsApp.</p>
   </div>
 
   <div id="eventoCard" class="card jogo hidden">
+    <a class="btn grupo destaque hidden" id="grupoTopo" target="_blank" rel="noopener">💚 SEGUIR O CANAL NO WHATSAPP<small>Lojas Oficiais do Flamengo · imprescindível para ganhar</small></a>
     <p class="chamada" id="evChamada"></p>
-    <a class="btn grupo destaque hidden" id="grupoTopo" target="_blank" rel="noopener">💚 ENTRAR NO GRUPO VIP DO WHATSAPP<small>Imprescindível para ganhar o prêmio</small></a>
     <h2 id="evNome"></h2>
     <div class="info">
       <span>📅 Jogo</span><b id="evData"></b>
@@ -142,6 +144,7 @@ window.supabase={createClient(){return{
     <label for="nasc">Data de nascimento</label>
     <input type="tel" id="nasc" inputmode="numeric" placeholder="dd/mm/aaaa" maxlength="10">
     <div class="dica" id="d-nasc"></div>
+    <div class="obs">⚠️ Confira com atenção: depois da inscrição, a data de nascimento <b>não pode ser alterada</b>. Ela vale para o sorteio dos aniversariantes do mês.</div>
 
 
     <label for="zap">WhatsApp (com DDD)</label>
@@ -149,7 +152,7 @@ window.supabase={createClient(){return{
     <div class="dica" id="d-zap"></div>
 
     <div id="secAmigos" class="amigos hidden">
-      <div class="amigosTit">📣 Convide seus amigos para o Grupo VIP</div>
+      <div class="amigosTit">📣 Convide seus amigos para seguir o canal</div>
       <p class="muted" style="font-size:13.5px;margin:4px 0 0">É a regra para participar: toque no botão, escolha seus amigos nos contatos do WhatsApp (no mínimo <b><span id="nAmigos">5</span></b>) e envie o convite. <b>Quanto mais amigos se inscreverem pelo seu convite, mais números da sorte você ganha!</b></p>
       <button type="button" class="btn zap" id="btnConvidarForm">📲 Convidar amigos no WhatsApp</button>
       <div class="convOk hidden" id="convOk">✅ Convite enviado! Se quiser, toque de novo e convide mais gente.</div>
@@ -177,13 +180,15 @@ window.supabase={createClient(){return{
     <h3>Inscrição confirmada!</h3>
     <p class="muted" id="sucessoTxt"></p>
     <p class="sorte">Aguarde o resultado e boa sorte! 🍀</p>
-    <p class="muted">O resultado sai no Grupo VIP das Lojas Oficiais do Flamengo.</p>
-    <div class="avisoVip hidden" id="avisoVipFim">⚠️ <b>Imprescindível:</b> só recebe o ingresso quem estiver participando do Grupo VIP do WhatsApp. Se ainda não entrou, entre agora:</div>
-    <a class="btn grupo destaque hidden" id="grupoFim" target="_blank" rel="noopener" style="margin-top:12px">💚 ENTRAR NO GRUPO VIP DO WHATSAPP<small>Imprescindível para ganhar o prêmio</small></a>
+    <p class="muted">O resultado sai no canal Lojas Oficiais do Flamengo no WhatsApp.</p>
+    <div class="avisoVip hidden" id="avisoVipFim">⚠️ <b>Imprescindível:</b> só recebe o prêmio quem estiver seguindo o canal Lojas Oficiais do Flamengo no WhatsApp. Se ainda não segue, siga agora:</div>
+    <a class="btn grupo destaque hidden" id="grupoFim" target="_blank" rel="noopener" style="margin-top:12px">💚 SEGUIR O CANAL NO WHATSAPP<small>Imprescindível para ganhar o prêmio</small></a>
+    <div class="avisoVip hidden" id="avisoAniv" style="background:rgba(255,255,255,.12);color:#fff"></div>
     <div class="numeros hidden" id="numerosBox">
       <div class="numTit">🍀 Seus números da sorte</div>
       <div class="numGrande" id="numQtd">1</div>
       <div class="muted" id="numTxt" style="font-size:14px"></div>
+      <div class="ranking hidden" id="rankTxt"></div>
       <p class="muted" style="font-size:14px;margin:10px 0 0">Quanto mais amigos você chamar, maiores as suas chances! Cada amigo que se inscrever pelo <b>seu</b> convite vale <b>+1 número da sorte</b>. Sem limite.</p>
       <button type="button" class="btn zap" id="convidarMais">📲 Convidar mais amigos</button>
       <button type="button" class="btn sec" id="atualizarNumeros">🔄 Atualizar meus números</button>
@@ -193,7 +198,7 @@ window.supabase={createClient(){return{
   <div id="conviteCard" class="card centro hidden" style="border-color:#2f6b45">
     <div style="font-size:40px">🤝</div>
     <h3>Chame a galera!</h3>
-    <p class="muted">Convide seus amigos para o Grupo VIP das Lojas Oficiais do Flamengo. Quanto mais gente, mais sorteios! 🔴⚫</p>
+    <p class="muted">Convide seus amigos para seguir o canal Lojas Oficiais do Flamengo. Quanto mais gente, mais sorteios! 🔴⚫</p>
     <button class="btn zap" id="convidar" type="button">📲 Convidar amigos</button>
   </div>
 
@@ -294,13 +299,18 @@ $('form').addEventListener('submit', async e=>{
 function limpa(m){ return (m||'').replace(/^.*?ERROR:\s*/,''); }
 function mostrarSucesso(zap){
   $('form').classList.add('hidden'); $('sucesso').classList.remove('hidden');
+  const dn=$('nasc').value.match(/^\d{2}\/(\d{2})\//); const mesN=dn?+dn[1]:+(ler('vpm_mes_'+codigo)||0);
+  if(dn) guardar('vpm_mes_'+codigo, mesN);
+  if(qtdAniv>0 && mesN===mesAniv){ $('avisoAniv').innerHTML=`🎂 Você faz aniversário em ${MESES[mesAniv]}! Além do sorteio geral, você também concorre no <b>sorteio separado dos aniversariantes do mês</b>.`; $('avisoAniv').classList.remove('hidden'); }
   if(linkGrupo){ $('conviteCard').classList.add('hidden'); $('numerosBox').classList.remove('hidden'); atualizarNumeros(); }
   $('sucessoTxt').innerHTML = `O sorteio acontece após o encerramento das inscrições (<b>${fmtData(evento.inscricoes_ate)}</b>).<br>Se você for sorteado, vamos te avisar no WhatsApp <b>${zap}</b>.`;
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
 // ---------- convidar amigos para o grupo ----------
-let linkGrupo=null, convitesMin=0, convidou=false;
+let linkGrupo=null, convitesMin=0, convidou=false, qtdAniv=0, mesAniv=0, premioConv='';
+const esc2=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const MESES=['','janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
 const refRecebido=(new URLSearchParams(location.search).get('r')||'').replace(/[^a-zA-Z0-9]/g,'').toLowerCase();
 let meuRef = ler('vpm_meuref_'+codigo) || Array.from(crypto.getRandomValues(new Uint8Array(8)),b=>'abcdefghjkmnpqrstuvwxyz23456789'[b%31]).join('');
 guardar('vpm_meuref_'+codigo, meuRef);
@@ -315,12 +325,14 @@ function mensagemConvite(){
   const nome=primeiroNome();
   const abertura = nome ? `Fala! 👋 *${nome}* está te convidando` : 'Fala! 👋 Você foi convidado';
   const jogo = evento && evento.nome ? ` *${evento.nome}*` : '';
-  return `${abertura} para o *Grupo VIP das Lojas Oficiais do Flamengo* no WhatsApp! 🔴⚫\n\n`+
-    `👇👇 *TOQUE AQUI E ENTRE NO GRUPO VIP* 👇👇\n${linkGrupo}\n\n`+
+  return `${abertura} para seguir o canal *Lojas Oficiais do Flamengo* no WhatsApp! 🔴⚫\n\n`+
+    `👇👇 *TOQUE AQUI E SIGA O CANAL* 👇👇\n${linkGrupo}\n\n`+
     `Está rolando o *Vou pro Maraca*: sorteio de ingressos para o jogo${jogo} no Maracanã! 🎟️⚽\n\n`+
-    `✅ Estar no Grupo VIP é *imprescindível* para ganhar o prêmio.\n\n`+
-    `📝 Depois de entrar no grupo, faça sua inscrição no sorteio por este link:\n${meuLink()}\n\n`+
-    `🍀 Quanto mais amigos você chamar, maiores as suas chances!`;
+    `✅ Seguir o canal é *imprescindível* para ganhar o prêmio.\n\n`+
+    `📝 Depois de seguir o canal, faça sua inscrição no sorteio por este link:\n${meuLink()}\n\n`+
+    `🍀 Quanto mais amigos você chamar, maiores as suas chances!`+
+    (qtdAniv>0 ? `\n🎂 Aniversariantes de ${MESES[mesAniv]} têm um sorteio separado!` : '')+
+    (premioConv ? `\n🏆 Quem mais convidar amigos ganha: *${premioConv}*!` : '');
 }
 $('convidar').onclick=()=>{ if(linkGrupo) window.open('https://wa.me/?text='+encodeURIComponent(mensagemConvite()),'_blank'); };
 
@@ -337,16 +349,18 @@ async function carregarConvite(){
   try{
     const {data}=await sb.rpc('config_evento',{p_codigo:codigo});
     if(data && data.link_grupo){
-      linkGrupo=data.link_grupo; convitesMin=data.convites_minimos||0;
+      linkGrupo=data.link_grupo; convitesMin=data.convites_minimos||0; qtdAniv=data.qtd_aniversariantes||0; mesAniv=data.mes_aniversario||0; premioConv=data.premio_convites||'';
       $('conviteCard').classList.remove('hidden');
       ['grupoTopo','grupoFim'].forEach(id=>{ $(id).href=linkGrupo; $(id).classList.remove('hidden'); });
       $('avisoVipFim').classList.remove('hidden');
       $('evIdade').classList.add('hidden');
       const mins = convitesMin>0 ? ` (no mínimo ${convitesMin})` : '';
       $('evRegra').innerHTML = `<div class="regTit">📋 Regras do sorteio</div><ol class="regras">`+
-        `<li><b>Estar no Grupo VIP do WhatsApp das Lojas Oficiais do Flamengo é imprescindível para ganhar o prêmio.</b> Quem for sorteado e não estiver no grupo perde o ingresso.</li>`+
-        (convitesMin>0 ? `<li>Para participar, convide seus amigos para o Grupo VIP${mins}. O convite é feito aqui mesmo, na inscrição.</li>` : '')+
+        `<li><b>Seguir o canal Lojas Oficiais do Flamengo no WhatsApp é imprescindível para ganhar o prêmio.</b> Quem for sorteado e não estiver seguindo o canal perde o prêmio. O ganhador vai precisar mandar um print mostrando que segue o canal.</li>`+
+        (convitesMin>0 ? `<li>Para participar, convide seus amigos para seguir o canal${mins}. O convite é feito aqui mesmo, na inscrição.</li>` : '')+
         `<li><b>Quanto mais amigos você chamar, maiores as suas chances!</b> Cada amigo que se inscrever pelo seu convite vale +1 número da sorte. Sem limite.</li>`+
+        (premioConv ? `<li>🏆 <b>Prêmio para quem mais convidar:</b> quem fizer o maior número de convites que gerarem inscrição ganha: <b>${esc2(premioConv)}</b>. Em caso de empate, ganha quem chegou primeiro a esse número. Esse prêmio é separado: você continua concorrendo no sorteio.</li>` : '')+
+        (qtdAniv>0 ? `<li>🎂 <b>Sorteio separado para os aniversariantes de ${MESES[mesAniv]}:</b> ${qtdAniv} dos ${evento.qtd_ganhadores} ingressos ${qtdAniv>1?'são sorteados':'é sorteado'} só entre quem faz aniversário em ${MESES[mesAniv]}. Esse sorteio acontece primeiro e os números da sorte também valem nele: <b>aniversariante que convida mais amigos tem mais chances</b>. Quem não ganhar continua concorrendo no sorteio geral.</li>` : '')+
         `<li>Uma inscrição por WhatsApp${evento.idade_minima>0?`, somente maiores de ${evento.idade_minima} anos`:''}.</li></ol>`;
       $('evRegra').classList.remove('hidden');
       if(convitesMin>0){ $('nAmigos').textContent=convitesMin; $('secAmigos').classList.remove('hidden'); }
@@ -360,6 +374,13 @@ async function atualizarNumeros(){
     const n=(data&&data.numeros)||1, a=(data&&data.amigos)||0;
     $('numQtd').textContent=n;
     $('numTxt').textContent = a ? `${a} ${a>1?'amigos se inscreveram':'amigo se inscreveu'} pelo seu convite 👏` : 'Nenhum amigo se inscreveu pelo seu convite ainda.';
+    if(premioConv){
+      const pos=data&&data.posicao, lid=(data&&data.lider)||0; let t;
+      if(a>0 && pos===1) t=`🏆 <b>Você está em 1º lugar</b> no ranking de convites! Continue chamando a galera para garantir o camarote.`;
+      else if(a>0) t=`🏆 Você está em <b>${pos}º lugar</b> no ranking de convites. O líder tem <b>${lid}</b> ${lid>1?'amigos inscritos':'amigo inscrito'}.`;
+      else t = lid>0 ? `🏆 O líder do ranking de convites tem <b>${lid}</b> ${lid>1?'amigos inscritos':'amigo inscrito'}. Chame seus amigos e dispute o camarote!` : `🏆 Ninguém pontuou ainda no ranking de convites. Saia na frente e dispute o camarote!`;
+      $('rankTxt').innerHTML=t; $('rankTxt').classList.remove('hidden');
+    }
   }catch(e){}
 }
 $('convidarMais').onclick=()=>{ if(linkGrupo) window.open('https://wa.me/?text='+encodeURIComponent(mensagemConvite()),'_blank'); };
@@ -367,23 +388,25 @@ $('atualizarNumeros').onclick=async()=>{ await atualizarNumeros(); toast('Númer
 
 // ---------- carregar evento ----------
 (async()=>{
-  if(!codigo){ mostrarErro('Link inválido','Abra o link de inscrição enviado no grupo do WhatsApp.'); return; }
+  if(!codigo){ mostrarErro('Link inválido','Abra o link de inscrição enviado no canal Lojas Oficiais do Flamengo.'); return; }
   try{
     const {data,error}=await tentar(()=>sb.rpc('dados_evento',{p_codigo:codigo}).then(r=>{ if(r.error) throw r.error; return r; }));
-    if(error||!data||!data.length){ mostrarErro('Sorteio não encontrado','Confira o link recebido no grupo do WhatsApp.'); return; }
+    if(error||!data||!data.length){ mostrarErro('Sorteio não encontrado','Confira o link recebido no WhatsApp.'); return; }
     evento=data[0];
   }catch(e){ mostrarErro('Sem conexão','Não consegui carregar o sorteio. Verifique sua internet e recarregue a página.'); return; }
   $('carregando').classList.add('hidden');
   $('evNome').textContent=evento.nome; $('evData').textContent=fmtData(evento.data_evento);
   const qn=evento.qtd_ganhadores, esc=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-  $('evChamada').innerHTML=`🎉 <b>Estamos fazendo um sorteio!</b> O Grupo VIP das Lojas Oficiais do Flamengo vai sortear <b>${qn} ${qn>1?'torcedores':'torcedor'}</b> para o jogo <b>${esc(evento.nome)}</b> no Maracanã. Boa sorte! 🍀`;
+  $('evChamada').innerHTML=`🎉 <b>Estamos fazendo um sorteio!</b> As Lojas Oficiais do Flamengo vão sortear <b>${qn} ${qn>1?'torcedores':'torcedor'}</b> para o jogo <b>${esc(evento.nome)}</b> no Maracanã. Boa sorte! 🍀<span id="chamadaAniv"></span>`;
   $('evSetor').textContent=evento.setor; $('evQtd').textContent=`${evento.qtd_ganhadores} ${evento.qtd_ganhadores>1?'sorteados':'sorteado'}`;
   $('evAte').textContent=fmtData(evento.inscricoes_ate);
   $('evIdade').textContent = evento.idade_minima>0 ? `Somente maiores de ${evento.idade_minima} anos. Uma inscrição por WhatsApp.` : 'Uma inscrição por WhatsApp.';
   $('eventoCard').classList.remove('hidden');
   await carregarConvite();
+  if(premioConv) $('chamadaAniv').insertAdjacentHTML('beforeend',`<br><br>🏆 <b>E mais:</b> quem fizer o maior número de convites que gerarem inscrição vai <b>${esc2(premioConv.replace(/^Assistir/i,'assistir'))}</b>!`);
+  if(qtdAniv>0) $('chamadaAniv').innerHTML+=`<br><br>🎂 <b>Aniversariantes de ${MESES[mesAniv]}</b> têm um sorteio separado: ${qtdAniv} ${qtdAniv>1?'ingressos são':'ingresso é'} só para quem faz aniversário em ${MESES[mesAniv]}!`;
   if(evento.sorteado){ mostrarErro('Sorteio realizado! 🏆','Este sorteio já aconteceu. Os vencedores foram avisados pelo WhatsApp.'); return; }
-  if(!evento.aberto){ mostrarErro('Inscrições encerradas','O prazo de inscrição deste sorteio terminou. Aguarde o resultado no grupo!'); return; }
+  if(!evento.aberto){ mostrarErro('Inscrições encerradas','O prazo de inscrição deste sorteio terminou. Aguarde o resultado no canal!'); return; }
   const ja=ler('vpm_'+codigo); if(ja){ mostrarSucesso(ja); return; }
   $('form').classList.remove('hidden');
 })();
