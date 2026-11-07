@@ -62,7 +62,7 @@
   .avisado{color:var(--ok);font-size:12.5px;font-weight:600}
   .semlink{color:var(--erro);font-size:12.5px;font-weight:600}
   .sortear{font-size:22px;padding:18px;font-family:"Bebas Neue",Impact,sans-serif;letter-spacing:1.5px}
-  .toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(140px);background:#011c3a;color:#fff;border:1px solid var(--linha);padding:12px 18px;border-radius:12px;font-size:14.5px;max-width:92vw;transition:.3s;z-index:50;box-shadow:0 8px 24px rgba(0,0,0,.4)}
+  .toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(140px);background:#151516;color:#fff;border:1px solid var(--linha);padding:12px 18px;border-radius:12px;font-size:14.5px;max-width:92vw;transition:.3s;z-index:50;box-shadow:0 8px 24px rgba(0,0,0,.4)}
   .toast.on{transform:translateX(-50%) translateY(0)} .toast.erro{border-color:var(--erro)}
   .overlay{position:fixed;inset:0;background:rgba(12,6,7,.96);z-index:40;display:flex;align-items:center;justify-content:center;flex-direction:column;padding:20px;text-align:center}
   .overlay img{max-width:92vw;max-height:80vh;border-radius:16px}
@@ -93,6 +93,14 @@
   .loginMarca small{display:block;font-family:Inter,system-ui,sans-serif;font-size:11.5px;letter-spacing:2.5px;color:var(--suave);font-weight:700;margin-top:6px}
   .top{border-bottom:2px solid rgba(255,255,255,.35)!important}
   .tagAniv{display:inline-block;margin:3px 0 2px;font-size:12px;font-weight:700;padding:3px 9px;border-radius:10px;background:#fff;color:var(--azul)}
+  .rkLinha{display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:10px;margin-top:4px;background:rgba(255,255,255,.04)}
+  .rkLinha.lider{background:rgba(255,211,107,.14)}
+  .rkPos{width:34px;text-align:center;font-weight:800;font-size:18px;flex:none}
+  .rkNome{flex:1;min-width:0;font-weight:600;font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .rkNome small{display:block;font-size:11.5px;color:#ffd36b;font-weight:700}
+  .rkPts{flex:none;text-align:right;font-size:26px;font-weight:900;line-height:1}
+  .rkPts small{display:block;font-size:11px;font-weight:600;color:var(--suave)}
+  .lider .rkPts{color:#ffd36b}
   .hidden{display:none!important}
   .busca{margin-top:4px}
   .tag{font-size:11px;font-weight:700;padding:2px 7px;border-radius:10px;margin-left:6px;vertical-align:2px}
@@ -216,6 +224,7 @@
     <div class="card hidden" id="cRanking">
       <h3 style="margin:0">🏆 Ranking de convites</h3>
       <p class="ajuda" id="rkPremio" style="margin:6px 0 0"></p>
+      <div class="acoes" id="rkAcoes"><button class="btn ouro sm" id="rkImagem">📸 Imagem do ranking</button><button class="btn sm" id="rkCopiar">📋 Copiar ranking p/ canal</button></div>
       <div id="listaRanking" style="margin-top:8px"></div>
     </div>
 
@@ -488,15 +497,66 @@ function ranking(){
   return Object.entries(m).map(([id,r])=>({p:inscritos.find(x=>x.id===id),n:r.n,t:r.t})).filter(x=>x.p).sort((a,b)=>b.n-a.n||(a.t<b.t?-1:1));
 }
 function renderRanking(){
-  const tem=!!(atual.premio_convites&&atual.premio_convites.trim());
-  $('cRanking').classList.toggle('hidden',!tem); if(!tem) return;
-  $('rkPremio').innerHTML=`Prêmio para o 1º lugar: <b>${esc(atual.premio_convites)}</b>. Conta só amigo que se inscreveu pelo link da pessoa. Empate: quem chegou primeiro ao número.`;
-  const rk=ranking().slice(0,10), aberto=new Date()<new Date(atual.inscricoes_ate)&&atual.status!=='sorteado';
-  $('listaRanking').innerHTML=rk.length?rk.map((x,i)=>`<div class="pessoa ${i===0?'ganhador':''}"><div class="ordem">${i+1}º</div>${fotoHtml(x.p)}<div class="pinfo"><b>${esc(x.p.nome)}</b>${i===0?`<span class="tagAniv">🏆 ${aberto?'Liderando':'Ganhador do prêmio'}</span>`:''}<small>👥 ${x.n} ${x.n>1?'amigos inscritos':'amigo inscrito'} · 📱 ${fmtZap(x.p.whatsapp)}<br>Chegou a ${x.n} em ${dataHora(x.t)}</small>
-    ${i===0&&!aberto?`<div class="pbtns"><button class="btn zap sm" onclick="avisarCamarote('${x.p.id}',${x.n})">📲 Avisar no WhatsApp</button></div>`:''}</div></div>`).join('')
+  const rkTodos=ranking(), temPremio=!!(atual.premio_convites&&atual.premio_convites.trim());
+  $('cRanking').classList.toggle('hidden',!temPremio&&!rkTodos.length); if(!temPremio&&!rkTodos.length) return;
+  $('rkPremio').innerHTML= temPremio ? `Prêmio para o 1º lugar: <b>${esc(atual.premio_convites)}</b>. Conta só amigo que se inscreveu pelo link da pessoa. Empate: quem chegou primeiro ao número.` : 'Conta só amigo que se inscreveu pelo link da pessoa.';
+  $('rkAcoes').classList.toggle('hidden',!rkTodos.length);
+  const rk=rkTodos.slice(0,20), aberto=new Date()<new Date(atual.inscricoes_ate)&&atual.status!=='sorteado';
+  const med=i=>['🥇','🥈','🥉'][i]||`${i+1}º`;
+  $('listaRanking').innerHTML=rk.length?rk.map((x,i)=>`<div class="rkLinha ${i===0?'lider':''}"><div class="rkPos">${med(i)}</div><div class="rkNome">${esc(x.p.nome)}${i===0&&temPremio?`<small>🏆 ${aberto?'Liderando':'Ganhador do prêmio'}</small>`:''}</div><div class="rkPts">${x.n}<small>${x.n>1?'amigos':'amigo'}</small></div></div>
+    ${i===0&&!aberto&&temPremio?`<div class="pbtns" style="margin:4px 0 8px"><button class="btn zap sm" onclick="avisarCamarote('${x.p.id}',${x.n})">📲 Avisar o ganhador no WhatsApp</button></div>`:''}`).join('')
+    +(rkTodos.length>20?`<p class="ajuda">+ ${rkTodos.length-20} pessoas com amigos inscritos.</p>`:'')
     :'<p class="muted">Ninguém trouxe amigos inscritos ainda.</p>';
-  if(rk.length&&aberto) $('listaRanking').insertAdjacentHTML('beforeend','<p class="ajuda">O ganhador é definido quando as inscrições encerrarem. Aí aparece o botão para avisar.</p>');
+  if(rk.length&&aberto&&temPremio) $('listaRanking').insertAdjacentHTML('beforeend','<p class="ajuda">O ganhador é definido quando as inscrições encerrarem. Aí aparece o botão para avisar.</p>');
 }
+// nome para divulgar: primeiro nome + inicial do sobrenome
+const nomePublico=n=>{const p=n.trim().split(/\s+/);return p.length>1?`${p[0]} ${p[p.length-1][0]}.`:p[0]};
+$('rkCopiar').onclick=()=>{
+  const rk=ranking().slice(0,10), med=i=>['🥇','🥈','🥉'][i]||`${i+1}º`;
+  const ate=`${dia(atual.inscricoes_ate)} às ${hora(atual.inscricoes_ate).replace(':','h')}`;
+  copiar(`🏆 *RANKING DE CONVITES* 🏆
+🎁 _Nação Premiada · Lojas Oficiais do Flamengo_
+*${atual.nome}*
+
+`+rk.map((x,i)=>`${med(i)} ${nomePublico(x.p.nome)} — *${x.n}* ${x.n>1?'amigos':'amigo'}`).join('\n')+`
+
+`+(atual.premio_convites?`🏆 Quem terminar em 1º ganha: *${atual.premio_convites}*!\n`:'')+`🍀 Cada amigo que se inscrever pelo seu convite vale *+1 número da sorte* no sorteio.
+⏳ Inscrições até *${ate}*. Ainda dá tempo de virar o jogo!
+
+👉 ${linkInscricao(atual)}`);
+};
+$('rkImagem').onclick=async()=>{
+  const rk=ranking().slice(0,10); if(!rk.length) return;
+  const W=1080, linhaH=92, topo=330, H=topo+rk.length*linhaH+(atual.premio_convites?250:150);
+  const c=document.createElement('canvas'); c.width=W; c.height=H; const g=c.getContext('2d');
+  const fundo=g.createLinearGradient(0,0,0,H); fundo.addColorStop(0,'#7a0e17'); fundo.addColorStop(.35,'#1a0b0d'); fundo.addColorStop(1,'#0b0b0c'); g.fillStyle=fundo; g.fillRect(0,0,W,H);
+  const brilho=g.createRadialGradient(W/2,0,10,W/2,0,700); brilho.addColorStop(0,'rgba(230,40,60,.45)'); brilho.addColorStop(1,'rgba(230,40,60,0)'); g.fillStyle=brilho; g.fillRect(0,0,W,H);
+  const F='Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif';
+  g.textAlign='center'; g.fillStyle='#fff';
+  g.font=`700 30px ${F}`; g.globalAlpha=.85; g.fillText('LOJAS OFICIAIS DO FLAMENGO',W/2,78); g.globalAlpha=1;
+  g.font=`900 92px ${F}`; g.fillText('🎁 NAÇÃO PREMIADA',W/2,180);
+  g.font=`800 50px ${F}`; g.fillStyle='#ffd36b'; g.fillText('🏆 RANKING DE CONVITES',W/2,255);
+  g.font=`600 34px ${F}`; g.fillStyle='#e9e3e4'; g.fillText(atual.nome.length>44?atual.nome.slice(0,43)+'…':atual.nome,W/2,305);
+  rk.forEach((x,i)=>{
+    const y=topo+i*linhaH;
+    g.fillStyle=i===0?'rgba(255,211,107,.18)':(i%2?'rgba(255,255,255,.04)':'rgba(255,255,255,.08)');
+    const r=22; g.beginPath(); g.roundRect?g.roundRect(60,y,W-120,linhaH-12,r):g.rect(60,y,W-120,linhaH-12); g.fill();
+    g.textAlign='left'; g.fillStyle='#fff'; g.font=`800 44px ${F}`;
+    g.fillText(['🥇','🥈','🥉'][i]||`${i+1}º`,90,y+56);
+    g.font=`700 42px ${F}`; let nm=nomePublico(x.p.nome); g.fillText(nm.length>24?nm.slice(0,23)+'…':nm,200,y+56);
+    g.textAlign='right'; g.font=`900 54px ${F}`; g.fillStyle=i===0?'#ffd36b':'#fff'; g.fillText(String(x.n),W-200,y+60);
+    g.font=`600 28px ${F}`; g.fillStyle='#c9c3c4'; g.fillText(x.n>1?'amigos':'amigo',W-90,y+56);
+  });
+  let y=topo+rk.length*linhaH+60; g.textAlign='center';
+  if(atual.premio_convites){ g.fillStyle='#fff'; g.font=`800 38px ${F}`; g.fillText('O 1º lugar ganha:',W/2,y); y+=52;
+    g.font=`700 34px ${F}`; g.fillStyle='#ffd36b'; const t=atual.premio_convites; const partes=t.length>48?[t.slice(0,t.lastIndexOf(' ',48)),t.slice(t.lastIndexOf(' ',48)+1)]:[t];
+    partes.forEach(p=>{g.fillText(p,W/2,y); y+=44;}); y+=20; }
+  g.fillStyle='#e9e3e4'; g.font=`600 32px ${F}`; g.fillText(`Convide seus amigos! Inscrições até ${dia(atual.inscricoes_ate)}`,W/2,y);
+  const blob=await new Promise(r=>c.toBlob(r,'image/png'));
+  const arq=new File([blob],'ranking-nacao-premiada.png',{type:'image/png'});
+  try{ if(navigator.canShare&&navigator.canShare({files:[arq]})){ await navigator.share({files:[arq],title:'Ranking de convites'}); return; } }catch(e){ if(e&&e.name==='AbortError') return; }
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='ranking-nacao-premiada.png'; a.click(); toast('Imagem baixada 📸');
+};
 function avisarCamarote(id,n){
   const p=inscritos.find(x=>x.id===id);
   abrirZap(p.whatsapp,`🏆 Parabéns, ${primeiro(p.nome)}! Você foi quem mais convidou amigos na *Nação Premiada* (${n} ${n>1?'amigos inscritos':'amigo inscrito'}) e ganhou: *${atual.premio_convites}*!\n\n🆚 *${atual.nome}*\n📅 ${dia(atual.data_evento)} às ${hora(atual.data_evento)}\n\nEm breve enviaremos todos os detalhes. Faça o cadastro da sua facial e torça muito! ⚽🔥\n\n📸 *Para confirmar o prêmio*, responda esta mensagem com um *print mostrando que você segue o canal Lojas Oficiais do Flamengo* no WhatsApp.\n\n_Lojas Oficiais do Flamengo_ 🔴⚫`);

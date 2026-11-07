@@ -67,7 +67,7 @@
   .grande{font-size:64px;margin:8px 0}
   h3{margin:6px 0 8px;font-size:22px}
   .muted{color:var(--suave);font-size:15px;line-height:1.5}
-  .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(120px);background:#011c3a;color:#fff;border:1px solid var(--linha);
+  .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(120px);background:#151516;color:#fff;border:1px solid var(--linha);
          padding:13px 18px;border-radius:12px;font-size:14.5px;max-width:92vw;transition:.3s;z-index:9;box-shadow:0 8px 24px rgba(0,0,0,.4)}
   .toast.on{transform:translateX(-50%) translateY(0)}
   .toast.erro{border-color:var(--erro)}
@@ -96,6 +96,7 @@
   .pnum{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:#25d366;color:#0b2e17;font-weight:800;font-size:14px;margin-right:6px;vertical-align:1px}
   .comoPart{display:block;margin-top:14px;padding:10px 12px;border-radius:10px;background:rgba(255,255,255,.12);font-size:15px}
   .presente{font-size:38px;line-height:1;margin:2px 0 6px;filter:drop-shadow(0 3px 10px rgba(0,0,0,.5))}
+  .amigos.pendente{border-color:var(--erro);box-shadow:0 0 0 3px rgba(255,107,107,.25)}
   .hidden{display:none!important}
   footer{text-align:center;color:#8fa8cc;font-size:12px;margin-top:28px}
 </style>
@@ -146,13 +147,14 @@
       <div class="amigosTit"><span class="pnum">1</span> Siga o canal Lojas Oficiais do Flamengo</div>
       <p class="muted" style="font-size:13.5px;margin:6px 0 0">É <b>imprescindível para ganhar o prêmio</b>. O WhatsApp vai abrir: toque em <b>Seguir</b> e depois <b>volte para esta página</b> para concluir sua inscrição.</p>
       <a class="btn zap" id="btnSeguir" target="_blank" rel="noopener">💚 Seguir o canal no WhatsApp</a>
+      <button type="button" class="btn sec" id="btnJaSigo">✅ Já sigo o canal</button>
       <div class="convOk hidden" id="seguiuOk">✅ Boa! Agora é só convidar seus amigos.</div>
       <div class="dica" id="d-canal"></div>
     </div>
 
     <div id="secAmigos" class="amigos hidden">
       <div class="amigosTit"><span class="pnum" id="pnumAmigos">2</span> Convide seus amigos para seguir o canal</div>
-      <p class="muted" style="font-size:13.5px;margin:6px 0 0">Toque no botão, escolha seus amigos nos contatos do WhatsApp (no mínimo <b><span id="nAmigos">5</span></b>) e envie. Depois <b>volte para esta página</b>. <b>Quanto mais amigos se inscreverem pelo seu convite, mais números da sorte você ganha!</b></p>
+      <p class="muted" style="font-size:13.5px;margin:6px 0 0">Vale para cada sorteio, mesmo que você já tenha convidado antes. Toque no botão, escolha seus amigos nos contatos do WhatsApp (no mínimo <b><span id="nAmigos">5</span></b>) e envie. Depois <b>volte para esta página</b>. <b>Quanto mais amigos se inscreverem pelo seu convite, mais números da sorte você ganha!</b></p>
       <button type="button" class="btn zap" id="btnConvidarForm">📲 Convidar amigos no WhatsApp</button>
       <div class="convOk hidden" id="convOk">✅ Convite enviado! Se quiser, toque de novo e convide mais gente.</div>
       <div class="dica" id="d-amigos"></div>
@@ -248,7 +250,7 @@ function validar(){
   let mn=''; if(!n) mn='Data inválida. Use dd/mm/aaaa.'; else if(evento && idade(n.data)<evento.idade_minima) mn=`Sorteio apenas para maiores de ${evento.idade_minima} anos.`;
   ok = marca('nasc', mn) && ok;
   const z=so($('zap').value); ok = marca('zap', (z.length===10||z.length===11)?'':'Informe DDD + número.') && ok;
-  ok = marca('canal', (linkGrupo && !seguiu) ? 'Toque em "Seguir o canal no WhatsApp". É imprescindível para ganhar.' : '') && ok;
+  ok = marca('canal', (linkGrupo && !seguiu) ? 'Passo 1: toque em "Seguir o canal no WhatsApp" ou, se já segue, em "Já sigo o canal".' : '') && ok;
   ok = marca('amigos', checarAmigos()) && ok;
   ok = marca('aceite', $('aceite').checked?'':'É preciso autorizar o uso dos dados.') && ok;
   return ok;
@@ -276,7 +278,12 @@ function uuid(){ return (crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxx
 
 // ---------- envio ----------
 $('form').addEventListener('submit', async e=>{
-  e.preventDefault(); if(!validar()){ toast('Confira os campos destacados.',true); return; }
+  e.preventDefault(); if(!validar()){
+    const prim=[...document.querySelectorAll('#form .dica')].find(d=>d.textContent.trim());
+    ['canal','amigos'].forEach(k=>{ const box=$(k==='canal'?'secCanal':'secAmigos'); box.classList.toggle('pendente', !!$('d-'+k).textContent.trim()); });
+    toast(prim ? prim.textContent : 'Confira os campos destacados.', true);
+    if(prim){ (prim.closest('.amigos')||prim.previousElementSibling||prim).scrollIntoView({behavior:'smooth',block:'center'}); }
+    return; }
   const b=$('enviar'); b.disabled=true; b.innerHTML='<span class="spinner"></span>Enviando…';
   const id=uuid(); let path=null;
   try{
@@ -292,6 +299,7 @@ $('form').addEventListener('submit', async e=>{
       if(error){ const er=new Error(error.message); if(!/fetch|network|timeout/i.test(error.message)) er.naoRepetir=true; throw er; }
       if(data && data.ref_code){ meuRef=data.ref_code; guardar('vpm_meuref_'+codigo, meuRef); } });
     guardar('vpm_'+codigo, $('zap').value);
+    try{ localStorage.removeItem(chaveRasc()); }catch(e){}
     guardar('vpm_nome', $('nome').value.trim().split(/\s+/)[0].replace(/^./,c=>c.toUpperCase()));
     mostrarSucesso($('zap').value);
   }catch(err){
@@ -341,11 +349,23 @@ function mensagemConvite(){
 }
 $('convidar').onclick=()=>{ if(linkGrupo) window.open('https://wa.me/?text='+encodeURIComponent(mensagemConvite()),'_blank'); };
 
-$('btnSeguir').onclick=()=>{ seguiu=true; $('seguiuOk').classList.remove('hidden'); $('btnSeguir').textContent='💚 Abrir o canal de novo'; marca('canal',''); };
+function marcarSeguiu(){ seguiu=true; $('seguiuOk').classList.remove('hidden'); $('btnSeguir').textContent='💚 Abrir o canal de novo'; $('btnJaSigo').classList.add('hidden'); $('secCanal').classList.remove('pendente'); marca('canal',''); salvarRascunho(); }
+function marcarConvidou(){ convidou=true; $('convOk').classList.remove('hidden'); $('btnConvidarForm').textContent='📲 Convidar mais amigos'; $('secAmigos').classList.remove('pendente'); marca('amigos',''); salvarRascunho(); }
+$('btnSeguir').onclick=marcarSeguiu;
+$('btnJaSigo').onclick=marcarSeguiu;
+const chaveRasc=()=>'vpm_rasc_'+codigo;
+function salvarRascunho(){ try{ localStorage.setItem(chaveRasc(), JSON.stringify({nome:$('nome').value,nasc:$('nasc').value,zap:$('zap').value,seguiu,convidou,t:Date.now()})); }catch(e){} }
+function restaurarRascunho(){
+  try{ const r=JSON.parse(localStorage.getItem(chaveRasc())||'null'); if(!r || Date.now()-r.t>3*86400000) return;
+    if(r.nome) $('nome').value=r.nome; if(r.nasc) $('nasc').value=r.nasc; if(r.zap) $('zap').value=r.zap;
+    if(r.seguiu) marcarSeguiu(); if(r.convidou) marcarConvidou();
+  }catch(e){}
+}
+['nome','nasc','zap'].forEach(id=>$(id).addEventListener('input',salvarRascunho));
 $('btnConvidarForm').onclick=()=>{
   if(!linkGrupo) return;
   window.open('https://wa.me/?text='+encodeURIComponent(mensagemConvite()),'_blank');
-  convidou=true; $('convOk').classList.remove('hidden'); $('btnConvidarForm').textContent='📲 Convidar mais amigos'; marca('amigos','');
+  marcarConvidou();
 };
 function checarAmigos(){
   if(!amigosAtivos()) return '';
@@ -426,6 +446,7 @@ $('atualizarNumeros').onclick=async()=>{ await atualizarNumeros(); toast('Númer
   if(!evento.aberto){ mostrarErro('Inscrições encerradas','O prazo de inscrição deste sorteio terminou. Aguarde o resultado no canal!'); return; }
   const ja=ler('vpm_'+codigo); if(ja){ mostrarSucesso(ja); return; }
   $('form').classList.remove('hidden');
+  restaurarRascunho();
 })();
 </script>
 </body>
