@@ -122,8 +122,27 @@
 
   <!-- LISTA -->
   <div id="vLista" class="hidden">
-    <div class="linha"><h3 style="margin:8px 0 0">Eventos</h3><div style="display:flex;gap:8px"><button class="btn" id="bAtualizarLista">🔄 Atualizar</button><button class="btn ouro" id="bNovo">+ Novo evento</button></div></div>
+    <div class="linha"><h3 style="margin:8px 0 0">Eventos</h3><div style="display:flex;gap:8px"><button class="btn" id="bAtualizarLista">🔄</button><button class="btn ouro" id="bNovo">+ Novo evento</button></div></div>
+    <button class="btn full" id="bClientes" style="margin-top:12px;text-align:left">👥 Base de clientes <span id="qCli" style="float:right;opacity:.8"></span></button>
     <div id="listaEventos"></div>
+  </div>
+
+  <!-- CLIENTES -->
+  <div id="vClientes" class="hidden">
+    <button class="voltar" onclick="voltar()">‹ Voltar para eventos</button>
+    <div class="card">
+      <div class="linha"><h3 style="margin:0">👥 Base de clientes</h3><span class="contador" id="cliQtd">0</span></div>
+      <p class="ajuda" style="margin:6px 0 0">Todo mundo que já se inscreveu em algum sorteio, um registro por WhatsApp. Fica guardado mesmo se o evento for excluído.</p>
+      <div class="stats" id="cliStats"></div>
+      <input class="busca" id="cliBusca" placeholder="Buscar por nome ou WhatsApp" style="margin-top:12px">
+      <div class="grid2">
+        <div><label>Aniversariantes</label><select id="cliMes"><option value="">Todos os meses</option></select></div>
+        <div><label>Ordenar por</label><select id="cliOrdem"><option value="recentes">Mais recentes</option><option value="nome">Nome (A–Z)</option><option value="amigos">Mais amigos trazidos</option><option value="part">Mais participações</option><option value="aniv">Dia do aniversário</option></select></div>
+      </div>
+      <label class="check" style="display:flex;gap:8px;align-items:center;margin-top:12px;font-weight:600;color:var(--texto)"><input type="checkbox" id="cliNov" style="width:20px;height:20px"> Só quem aceita receber novidades</label>
+      <div class="acoes"><button class="btn sm" id="cliCsv">⬇️ Baixar planilha (CSV)</button><button class="btn sm" id="cliAtualizar">🔄 Atualizar</button></div>
+    </div>
+    <div class="card"><div id="cliLista"></div><div id="cliMais"></div></div>
   </div>
 
   <!-- FORM EVENTO -->
@@ -268,7 +287,7 @@ const linkInscricao=ev=>new URL('./?e='+ev.codigo,location.href).href.replace('/
 async function tentar(fn,v=3){let u;for(let i=0;i<v;i++){try{const r=await fn();if(r&&r.error)throw r.error;return r}catch(e){u=e;if(e&&e.code&&!/fetch|network/i.test(e.message||''))break;await new Promise(r=>setTimeout(r,700*(i+1)))}}throw u}
 const erroMsg=e=>(e&&e.message||'Erro inesperado').replace(/^.*?ERROR:\s*/,'');
 function situacao(ev){if(ev.status==='sorteado')return['Sorteado','b-sort'];if(new Date()<new Date(ev.inscricoes_ate))return['Inscrições abertas','b-aberto'];return['Aguardando sorteio','b-aguard']}
-function mostrar(v){['vLogin','vSemAcesso','vLista','vForm','vDetalhe'].forEach(x=>$(x).classList.toggle('hidden',x!==v));window.scrollTo(0,0)}
+function mostrar(v){['vLogin','vSemAcesso','vLista','vForm','vDetalhe','vClientes'].forEach(x=>$(x).classList.toggle('hidden',x!==v));window.scrollTo(0,0)}
 async function copiar(t){try{await navigator.clipboard.writeText(t);toast('Copiado ✅')}catch(e){const a=document.createElement('textarea');a.value=t;document.body.appendChild(a);a.select();document.execCommand('copy');a.remove();toast('Copiado ✅')}}
 function abrirZap(numero,texto){window.open(`https://wa.me/${numero||''}?text=${encodeURIComponent(texto)}`,'_blank')}
 
@@ -288,7 +307,7 @@ async function iniciar(){
   $('sair').classList.remove('hidden');
   const {data:adm}=await sb.rpc('is_admin');
   if(!adm){mostrar('vSemAcesso');return}
-  await carregarEventos();
+  await carregarEventos(); carregarClientes();
   const cod=new URLSearchParams(location.hash.slice(1)).get('ev');
   const ev=cod&&eventos.find(e=>e.codigo===cod);
   ev?abrirEvento(ev.id):mostrar('vLista');
@@ -315,9 +334,62 @@ window.addEventListener('popstate',()=>{
   navInterno=Math.max(0,navInterno-1);
   const h=location.hash; const cod=new URLSearchParams(h.slice(1)).get('ev');
   if(h==='#form'){ if($('vForm').classList.contains('hidden')) history.back(); return; }
+  if(h==='#clientes'){ abrirClientes(); return; }
   const ev=cod&&eventos.find(e=>e.codigo===cod);
   if(ev) abrirEvento(ev.id,true); else { carregarEventos(); mostrar('vLista'); }
 });
+let clientes=[], cliLimite=60;
+async function carregarClientes(){
+  try{ const {data}=await tentar(()=>sb.from('v_clientes').select('*').order('ultimo_cadastro',{ascending:false})); clientes=data||[]; }
+  catch(e){ toast('Erro ao carregar clientes: '+erroMsg(e),true); }
+  $('qCli').textContent=clientes.length||'';
+}
+async function abrirClientes(){
+  mostrar('vClientes'); if(location.hash!=='#clientes') irPara('#clientes');
+  if(!$('cliMes').options[1]) MESES.slice(1).forEach((m,i)=>$('cliMes').add(new Option('🎂 '+m.charAt(0).toUpperCase()+m.slice(1),i+1)));
+  await carregarClientes(); cliLimite=60; renderClientes();
+}
+function aniv(c){ return c.data_nascimento ? c.data_nascimento.slice(8,10)+'/'+c.data_nascimento.slice(5,7) : '—'; }
+function filtrarClientes(){
+  const q=$('cliBusca').value.trim().toLowerCase(), qd=q.replace(/\D/g,''), mes=+$('cliMes').value, nov=$('cliNov').checked;
+  let l=clientes.filter(c=>(!q||c.nome.toLowerCase().includes(q)||(qd&&c.whatsapp.includes(qd)))&&(!mes||(c.data_nascimento&&+c.data_nascimento.slice(5,7)===mes))&&(!nov||c.aceita_comunicacao));
+  const o=$('cliOrdem').value;
+  if(o==='nome') l.sort((a,b)=>a.nome.localeCompare(b.nome,'pt-BR'));
+  else if(o==='amigos') l.sort((a,b)=>b.amigos_trazidos-a.amigos_trazidos);
+  else if(o==='part') l.sort((a,b)=>b.participacoes-a.participacoes);
+  else if(o==='aniv') l.sort((a,b)=>(a.data_nascimento||'9').slice(5).localeCompare((b.data_nascimento||'9').slice(5)));
+  return l;
+}
+function renderClientes(){
+  const l=filtrarClientes(), mesAtual=new Date().getMonth()+1;
+  $('cliQtd').textContent = l.length===clientes.length ? clientes.length : `${l.length}/${clientes.length}`;
+  const nov=clientes.filter(c=>c.aceita_comunicacao).length, anivMes=clientes.filter(c=>c.data_nascimento&&+c.data_nascimento.slice(5,7)===mesAtual).length, conv=clientes.reduce((t,c)=>t+c.amigos_trazidos,0);
+  $('cliStats').innerHTML=`<div class="stat"><b>${nov}</b><span>aceitam novidades</span></div><div class="stat"><b>${anivMes}</b><span>🎂 aniversariam em ${MESES[mesAtual]}</span></div><div class="stat"><b>${conv}</b><span>vieram por convite</span></div>`;
+  $('cliLista').innerHTML = l.length ? l.slice(0,cliLimite).map(c=>{
+    const ehAnivMes=c.data_nascimento&&+c.data_nascimento.slice(5,7)===mesAtual;
+    return `<div class="pessoa"><div class="foto semfoto">${esc(iniciais(c.nome))}</div><div class="pinfo"><b>${esc(c.nome)}</b>
+      <small>🎂 ${aniv(c)}${c.data_nascimento?` · ${idade(c.data_nascimento)} anos`:''} · 📱 ${fmtZap(c.whatsapp)}<br>
+      🎟️ ${c.participacoes} ${c.participacoes===1?'sorteio':'sorteios'} · 🏆 ${c.premios} ${c.premios===1?'prêmio':'prêmios'} · 👥 ${c.amigos_trazidos} ${c.amigos_trazidos===1?'amigo trazido':'amigos trazidos'}<br>
+      ${c.aceita_comunicacao?'✅ aceita novidades':'— não marcou novidades'} · desde ${dia(c.primeiro_cadastro)}</small>
+      <div class="pbtns"><button class="btn zap sm" onclick="abrirZap('${c.whatsapp}','')">💬 WhatsApp</button>${ehAnivMes?`<button class="btn sm" onclick="parabens('${c.whatsapp}')">🎂 Mandar parabéns</button>`:''}<button class="btn perigo sm" onclick="excluirCliente('${c.whatsapp}')">Excluir</button></div></div></div>`;}).join('')
+    : '<p class="muted">Nenhum cliente encontrado.</p>';
+  $('cliMais').innerHTML = l.length>cliLimite ? `<button class="btn full" onclick="cliLimite+=100;renderClientes()">Mostrar mais (${l.length-cliLimite})</button>` : '';
+}
+function parabens(w){ const c=clientes.find(x=>x.whatsapp===w); abrirZap(w,`🎂 Parabéns, ${primeiro(c.nome)}! As *Lojas Oficiais do Flamengo* desejam um feliz aniversário, com muita saúde e muitas vitórias do Mengão! 🔴⚫🎉\n\n_Nação Premiada · Sua paixão vale prêmios_`); }
+async function excluirCliente(w){
+  const c=clientes.find(x=>x.whatsapp===w);
+  if(!confirm(`Excluir ${c.nome} da base de clientes? (Use quando o cliente pedir para sair.) As inscrições nos sorteios não são apagadas.`))return;
+  try{ await tentar(()=>sb.from('clientes').delete().eq('whatsapp',w)); clientes=clientes.filter(x=>x.whatsapp!==w); renderClientes(); toast('Cliente excluído'); }catch(e){ toast(erroMsg(e),true); }
+}
+['cliBusca','cliMes','cliOrdem','cliNov'].forEach(id=>$(id).addEventListener(id==='cliBusca'?'input':'change',()=>{cliLimite=60;renderClientes()}));
+$('bClientes').onclick=abrirClientes;
+$('cliAtualizar').onclick=async()=>{await carregarClientes();renderClientes();toast('Atualizado')};
+$('cliCsv').onclick=()=>{
+  const l=filtrarClientes(), cab=['Nome','Aniversário','Nascimento','Idade','WhatsApp','Aceita novidades','Sorteios','Prêmios','Amigos trazidos','Primeiro cadastro','Último cadastro','Sorteios que participou'];
+  const lin=l.map(c=>[c.nome,aniv(c),c.data_nascimento?c.data_nascimento.split('-').reverse().join('/'):'',c.data_nascimento?idade(c.data_nascimento):'',fmtZap(c.whatsapp),c.aceita_comunicacao?'Sim':'Não',c.participacoes,c.premios,c.amigos_trazidos,dataHora(c.primeiro_cadastro),dataHora(c.ultimo_cadastro),c.sorteios||'']);
+  const csv='\ufeff'+[cab,...lin].map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(';')).join('\n');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download='clientes-nacao-premiada.csv';a.click();
+};
 $('bAtualizarLista').onclick=async()=>{await carregarEventos();toast('Atualizado')};
 
 // ---------- formulário ----------

@@ -168,8 +168,11 @@
     <div class="dica" id="d-selfie"></div>
 
     <label class="check"><input type="checkbox" id="aceite">
-      <span>Autorizo o uso dos meus dados (nome, nascimento, WhatsApp e selfie, se enviada) somente para este sorteio, para contato caso eu seja sorteado e para a entrega do prêmio, conforme a LGPD.</span></label>
+      <span>Autorizo as Lojas Oficiais do Flamengo a usar meus dados (nome, nascimento, WhatsApp e selfie, se enviada) neste sorteio, para contato e entrega do prêmio, e a guardá-los no cadastro de clientes das Lojas Oficiais do Flamengo, conforme a LGPD.</span></label>
     <div class="dica" id="d-aceite"></div>
+    <label class="check"><input type="checkbox" id="novidades">
+      <span>Quero receber novidades, promoções e os próximos sorteios das Lojas Oficiais do Flamengo pelo WhatsApp. <i>(opcional)</i></span></label>
+    
 
     <button class="btn" id="enviar" type="submit">Quero participar! 🔴⚫</button>
   </form>
@@ -201,7 +204,7 @@
     <button class="btn zap" id="convidar" type="button">📲 Convidar amigos</button>
   </div>
 
-  <footer>Nação Premiada · Lojas Oficiais do Flamengo<br>Seus dados são usados apenas para este sorteio</footer>
+  <footer>Nação Premiada · Lojas Oficiais do Flamengo<br>Seus dados são protegidos conforme a LGPD</footer>
 </div>
 <div class="toast" id="toast"></div>
 
@@ -283,9 +286,9 @@ $('form').addEventListener('submit', async e=>{
         if(error && !/exists|Duplicate/i.test(error.message)) throw error; }); }
       catch(e){ path=null; } // selfie é opcional: se falhar, segue sem ela
     }
-    await tentar(async()=>{ const {data,error}=await sb.rpc('inscrever_v5',{ p_codigo:codigo, p_id:id, p_nome:$('nome').value.trim(),
+    await tentar(async()=>{ const {data,error}=await sb.rpc('inscrever_v6',{ p_codigo:codigo, p_id:id, p_nome:$('nome').value.trim(),
         p_nascimento:dataNasc($('nasc').value).iso, p_whatsapp:so($('zap').value), p_selfie_path:path,
-        p_convidou: convidou, p_meu_ref: meuRef, p_ref: refRecebido || null });
+        p_convidou: convidou, p_meu_ref: meuRef, p_ref: refRecebido || null, p_comunicacao: $('novidades').checked });
       if(error){ const er=new Error(error.message); if(!/fetch|network|timeout/i.test(error.message)) er.naoRepetir=true; throw er; }
       if(data && data.ref_code){ meuRef=data.ref_code; guardar('vpm_meuref_'+codigo, meuRef); } });
     guardar('vpm_'+codigo, $('zap').value);
