@@ -103,6 +103,9 @@ window.supabase={createClient(){return{
   @keyframes pulsa{0%{box-shadow:0 0 0 0 rgba(37,211,102,.55)}70%{box-shadow:0 0 0 14px rgba(37,211,102,0)}100%{box-shadow:0 0 0 0 rgba(37,211,102,0)}}
   .obs{font-size:12.5px;color:#ffe08a;margin-top:6px;line-height:1.4}
   .ranking{margin-top:12px;padding:10px 12px;border-radius:10px;background:rgba(255,206,84,.15);color:#ffe08a;font-size:14px;line-height:1.45}
+  .passosTit{margin-top:20px;font-weight:800;font-size:15.5px}
+  .pnum{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:#25d366;color:#0b2e17;font-weight:800;font-size:14px;margin-right:6px;vertical-align:1px}
+  .comoPart{display:block;margin-top:14px;padding:10px 12px;border-radius:10px;background:rgba(255,255,255,.12);font-size:15px}
   .hidden{display:none!important}
   footer{text-align:center;color:#8fa8cc;font-size:12px;margin-top:28px}
 </style>
@@ -122,7 +125,6 @@ window.supabase={createClient(){return{
   </div>
 
   <div id="eventoCard" class="card jogo hidden">
-    <a class="btn grupo destaque hidden" id="grupoTopo" target="_blank" rel="noopener">💚 SEGUIR O CANAL NO WHATSAPP<small>Lojas Oficiais do Flamengo · imprescindível para ganhar</small></a>
     <p class="chamada" id="evChamada"></p>
     <h2 id="evNome"></h2>
     <div class="info">
@@ -151,9 +153,19 @@ window.supabase={createClient(){return{
     <input type="tel" id="zap" inputmode="numeric" autocomplete="tel-national" placeholder="(21) 99999-9999" maxlength="15">
     <div class="dica" id="d-zap"></div>
 
+    <div class="passosTit hidden" id="passosTit">Para participar, faça os passos abaixo 👇</div>
+
+    <div id="secCanal" class="amigos hidden">
+      <div class="amigosTit"><span class="pnum">1</span> Siga o canal Lojas Oficiais do Flamengo</div>
+      <p class="muted" style="font-size:13.5px;margin:6px 0 0">É <b>imprescindível para ganhar o prêmio</b>. O WhatsApp vai abrir: toque em <b>Seguir</b> e depois <b>volte para esta página</b> para concluir sua inscrição.</p>
+      <a class="btn zap" id="btnSeguir" target="_blank" rel="noopener">💚 Seguir o canal no WhatsApp</a>
+      <div class="convOk hidden" id="seguiuOk">✅ Boa! Agora é só convidar seus amigos.</div>
+      <div class="dica" id="d-canal"></div>
+    </div>
+
     <div id="secAmigos" class="amigos hidden">
-      <div class="amigosTit">📣 Convide seus amigos para seguir o canal</div>
-      <p class="muted" style="font-size:13.5px;margin:4px 0 0">É a regra para participar: toque no botão, escolha seus amigos nos contatos do WhatsApp (no mínimo <b><span id="nAmigos">5</span></b>) e envie o convite. <b>Quanto mais amigos se inscreverem pelo seu convite, mais números da sorte você ganha!</b></p>
+      <div class="amigosTit"><span class="pnum" id="pnumAmigos">2</span> Convide seus amigos para seguir o canal</div>
+      <p class="muted" style="font-size:13.5px;margin:6px 0 0">Toque no botão, escolha seus amigos nos contatos do WhatsApp (no mínimo <b><span id="nAmigos">5</span></b>) e envie. Depois <b>volte para esta página</b>. <b>Quanto mais amigos se inscreverem pelo seu convite, mais números da sorte você ganha!</b></p>
       <button type="button" class="btn zap" id="btnConvidarForm">📲 Convidar amigos no WhatsApp</button>
       <div class="convOk hidden" id="convOk">✅ Convite enviado! Se quiser, toque de novo e convide mais gente.</div>
       <div class="dica" id="d-amigos"></div>
@@ -246,6 +258,7 @@ function validar(){
   let mn=''; if(!n) mn='Data inválida. Use dd/mm/aaaa.'; else if(evento && idade(n.data)<evento.idade_minima) mn=`Sorteio apenas para maiores de ${evento.idade_minima} anos.`;
   ok = marca('nasc', mn) && ok;
   const z=so($('zap').value); ok = marca('zap', (z.length===10||z.length===11)?'':'Informe DDD + número.') && ok;
+  ok = marca('canal', (linkGrupo && !seguiu) ? 'Toque em "Seguir o canal no WhatsApp". É imprescindível para ganhar.' : '') && ok;
   ok = marca('amigos', checarAmigos()) && ok;
   ok = marca('aceite', $('aceite').checked?'':'É preciso autorizar o uso dos dados.') && ok;
   return ok;
@@ -308,7 +321,7 @@ function mostrarSucesso(zap){
 }
 
 // ---------- convidar amigos para o grupo ----------
-let linkGrupo=null, convitesMin=0, convidou=false, qtdAniv=0, mesAniv=0, premioConv='';
+let linkGrupo=null, convitesMin=0, convidou=false, seguiu=false, qtdAniv=0, mesAniv=0, premioConv='';
 const esc2=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const MESES=['','janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
 const refRecebido=(new URLSearchParams(location.search).get('r')||'').replace(/[^a-zA-Z0-9]/g,'').toLowerCase();
@@ -336,6 +349,7 @@ function mensagemConvite(){
 }
 $('convidar').onclick=()=>{ if(linkGrupo) window.open('https://wa.me/?text='+encodeURIComponent(mensagemConvite()),'_blank'); };
 
+$('btnSeguir').onclick=()=>{ seguiu=true; $('seguiuOk').classList.remove('hidden'); $('btnSeguir').textContent='💚 Abrir o canal de novo'; marca('canal',''); };
 $('btnConvidarForm').onclick=()=>{
   if(!linkGrupo) return;
   window.open('https://wa.me/?text='+encodeURIComponent(mensagemConvite()),'_blank');
@@ -351,7 +365,8 @@ async function carregarConvite(){
     if(data && data.link_grupo){
       linkGrupo=data.link_grupo; convitesMin=data.convites_minimos||0; qtdAniv=data.qtd_aniversariantes||0; mesAniv=data.mes_aniversario||0; premioConv=data.premio_convites||'';
       $('conviteCard').classList.remove('hidden');
-      ['grupoTopo','grupoFim'].forEach(id=>{ $(id).href=linkGrupo; $(id).classList.remove('hidden'); });
+      $('grupoFim').href=linkGrupo; $('grupoFim').classList.remove('hidden');
+      $('btnSeguir').href=linkGrupo; $('secCanal').classList.remove('hidden'); $('passosTit').classList.remove('hidden');
       $('avisoVipFim').classList.remove('hidden');
       $('evIdade').classList.add('hidden');
       const mins = convitesMin>0 ? ` (no mínimo ${convitesMin})` : '';
@@ -397,7 +412,7 @@ $('atualizarNumeros').onclick=async()=>{ await atualizarNumeros(); toast('Númer
   $('carregando').classList.add('hidden');
   $('evNome').textContent=evento.nome; $('evData').textContent=fmtData(evento.data_evento);
   const qn=evento.qtd_ganhadores, esc=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-  $('evChamada').innerHTML=`🎉 <b>Estamos fazendo um sorteio!</b> As Lojas Oficiais do Flamengo vão sortear <b>${qn} ${qn>1?'torcedores':'torcedor'}</b> para o jogo <b>${esc(evento.nome)}</b> no Maracanã. Boa sorte! 🍀<span id="chamadaAniv"></span>`;
+  $('evChamada').innerHTML=`🎉 <b>Estamos fazendo um sorteio!</b> As Lojas Oficiais do Flamengo vão sortear <b>${qn} ${qn>1?'torcedores':'torcedor'}</b> para o jogo <b>${esc(evento.nome)}</b> no Maracanã. Boa sorte! 🍀<span id="chamadaAniv"></span><span class="comoPart"><b>📝 Como participar:</b> preencha seus dados, siga o canal Lojas Oficiais do Flamengo e convide seus amigos. Tudo aqui embaixo 👇</span>`;
   $('evSetor').textContent=evento.setor; $('evQtd').textContent=`${evento.qtd_ganhadores} ${evento.qtd_ganhadores>1?'sorteados':'sorteado'}`;
   $('evAte').textContent=fmtData(evento.inscricoes_ate);
   $('evIdade').textContent = evento.idade_minima>0 ? `Somente maiores de ${evento.idade_minima} anos. Uma inscrição por WhatsApp.` : 'Uma inscrição por WhatsApp.';
