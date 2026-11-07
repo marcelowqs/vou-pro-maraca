@@ -3,20 +3,20 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Vou pro Maraca – Painel · Lojas Oficiais do Flamengo</title>
+<title>Nação Premiada – Painel · Lojas Oficiais do Flamengo</title>
 <meta name="robots" content="noindex">
-<meta name="theme-color" content="#01366c">
+<meta name="theme-color" content="#7a0e17">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="icon" type="image/png" href="favicon.png">
-<meta name="apple-mobile-web-app-title" content="Maraca Painel">
+<meta name="apple-mobile-web-app-title" content="Nação Painel">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-  :root{--grafite:#012a55;--grafite2:#0b4589;--grafite3:#1a5aa3;--linha:#2f68ab;--ouro:#ffffff;--ouro2:#ffffff;--texto:#ffffff;--suave:#bcd0ea;--azul:#01366c;--erro:#ff6b6b;--ok:#4cd28a;--zap:#25d366}
+  :root{--grafite:#0c0c0d;--grafite2:#1a1a1c;--grafite3:#2a2a2d;--linha:#3a3a3f;--ouro:#ffffff;--ouro2:#ffffff;--texto:#ffffff;--suave:#c9c3c4;--azul:#b5121b;--erro:#ff6b6b;--ok:#4cd28a;--zap:#25d366}
   *{box-sizing:border-box}
-  html{background:#01244b}
-  body{margin:0;background:radial-gradient(ellipse 90% 45% at 50% 0%,rgba(120,175,255,.45),transparent 70%),linear-gradient(180deg,#01366c 0%,#012c5a 60%,#01244b 100%);background-attachment:fixed;min-height:100vh;color:var(--texto);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+  html{background:#0b0b0c}
+  body{margin:0;background:radial-gradient(ellipse 90% 40% at 50% 0%,rgba(200,16,46,.4),transparent 70%),linear-gradient(180deg,#2a0a0e 0%,#121213 45%,#0b0b0c 100%);background-attachment:fixed;min-height:100vh;color:var(--texto);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;-webkit-font-smoothing:antialiased}
   .wrap{max-width:760px;margin:0 auto;padding:14px 14px 60px}
   .top{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:6px 0 10px;border-bottom:1px solid var(--linha);margin-bottom:12px}
   .logo{font-family:"Bebas Neue",Impact,sans-serif;font-size:32px;letter-spacing:1px;margin:0;color:#fff;cursor:pointer}
@@ -32,7 +32,7 @@
   @media(max-width:520px){.grid2{grid-template-columns:1fr}}
   button{font-family:inherit;cursor:pointer}
   .btn{padding:12px 16px;border-radius:11px;border:1px solid var(--linha);background:var(--grafite3);color:var(--texto);font-size:15px;font-weight:600}
-  .btn.ouro{background:linear-gradient(180deg,#ffffff,#dbe7f6);color:var(--azul);border:0}
+  .btn.ouro{background:linear-gradient(180deg,#e01b2f,#a80f1b);color:#fff;border:0}
   .btn.zap{background:var(--zap);color:#0b2e17;border:0}
   .btn.perigo{border-color:rgba(255,107,107,.5);color:var(--erro);background:transparent}
   .btn.sm{padding:8px 11px;font-size:13.5px;border-radius:9px}
@@ -64,7 +64,7 @@
   .sortear{font-size:22px;padding:18px;font-family:"Bebas Neue",Impact,sans-serif;letter-spacing:1.5px}
   .toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(140px);background:#011c3a;color:#fff;border:1px solid var(--linha);padding:12px 18px;border-radius:12px;font-size:14.5px;max-width:92vw;transition:.3s;z-index:50;box-shadow:0 8px 24px rgba(0,0,0,.4)}
   .toast.on{transform:translateX(-50%) translateY(0)} .toast.erro{border-color:var(--erro)}
-  .overlay{position:fixed;inset:0;background:rgba(1,26,56,.96);z-index:40;display:flex;align-items:center;justify-content:center;flex-direction:column;padding:20px;text-align:center}
+  .overlay{position:fixed;inset:0;background:rgba(12,6,7,.96);z-index:40;display:flex;align-items:center;justify-content:center;flex-direction:column;padding:20px;text-align:center}
   .overlay img{max-width:92vw;max-height:80vh;border-radius:16px}
   .roleta{font-family:"Bebas Neue",Impact,sans-serif;font-size:min(13vw,64px);color:var(--ouro2);min-height:1.2em;letter-spacing:1px}
   .contador{font-family:"Bebas Neue",Impact,sans-serif;font-size:34px;line-height:1;background:#fff;color:var(--azul);padding:4px 14px 2px;border-radius:12px;min-width:56px;text-align:center}
@@ -78,9 +78,9 @@
   .gitem b{display:block;font-size:13px;margin-top:6px;line-height:1.25;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
   .gitem small{display:block;font-size:11.5px;color:var(--suave);margin-top:2px}
   .gitem .gedit{margin-top:6px;padding:5px 9px;font-size:12px}
-  .modal{position:fixed;inset:0;background:rgba(1,26,56,.92);z-index:45;display:flex;align-items:flex-start;justify-content:center;padding:16px;overflow-y:auto}
+  .modal{position:fixed;inset:0;background:rgba(12,6,7,.92);z-index:45;display:flex;align-items:flex-start;justify-content:center;padding:16px;overflow-y:auto}
   .modal .card{width:100%;max-width:480px;margin:auto 0}
-  .semfoto{display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;background:linear-gradient(160deg,#1a5aa3,#0b3d78);cursor:default}
+  .semfoto{display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;background:linear-gradient(160deg,#8a1520,#3a0a10);cursor:default}
   .gfoto{width:100%;aspect-ratio:1;border-radius:16px;border:2px solid var(--linha);font-size:30px}
   .gitem.ganhador .gfoto{border-color:#fff}
   .voltar{display:inline-flex;align-items:center;gap:4px;background:none;border:0;color:#fff;font-size:16px;font-weight:600;padding:6px 2px 8px;cursor:pointer;font-family:inherit}
@@ -103,13 +103,13 @@
 <body>
 <div class="wrap">
   <div class="top">
-    <h1 class="logo" onclick="irLista()"><span class="tituloAdm">VOU PRO MARACA<small>Lojas Oficiais do Flamengo</small></span></h1>
+    <h1 class="logo" onclick="irLista()"><span class="tituloAdm">🎁 NAÇÃO PREMIADA<small>Lojas Oficiais do Flamengo</small></span></h1>
     <button class="btn sm hidden" id="sair">Sair</button>
   </div>
 
   <!-- LOGIN -->
   <div id="vLogin" class="card hidden" style="max-width:420px;margin:30px auto">
-    <div class="loginMarca">VOU PRO MARACA<small>LOJAS OFICIAIS DO FLAMENGO</small></div>
+    <div class="loginMarca">🎁<br>NAÇÃO PREMIADA<small>LOJAS OFICIAIS DO FLAMENGO</small></div>
     <h3 style="text-align:center">Acesso do administrador</h3>
     <label>E-mail</label><input id="lEmail" type="email" autocomplete="email">
     <label>Senha</label><input id="lSenha" type="password" autocomplete="current-password">
@@ -130,16 +130,19 @@
   <div id="vForm" class="card hidden">
     <button class="voltar" onclick="voltar()">‹ Voltar</button>
     <h3 id="fTitulo">Novo evento</h3>
-    <label>Jogo</label><input id="fNome" placeholder="Ex.: Flamengo x Vasco">
+    <label>Tipo de prêmio</label>
+    <select id="fTipo"><option value="ingresso">🎟️ Ingresso para jogo</option><option value="experiencia">⭐ Experiência</option><option value="produto">🎁 Produto</option></select>
+    <label id="lbNome">Jogo</label><input id="fNome" placeholder="Ex.: Flamengo x Vasco">
+    <div id="boxPremio" class="hidden"><label>O que será sorteado</label><input id="fPremio" placeholder="Ex.: Camisa oficial autografada"></div>
     <div class="grid2">
-      <div><label>Data e hora do jogo</label><input id="fData" type="datetime-local"></div>
-      <div><label>Setor</label><input id="fSetor" value="Oeste Superior"></div>
+      <div id="boxData"><label id="lbData">Data e hora do jogo</label><input id="fData" type="datetime-local"></div>
+      <div id="boxSetor"><label id="lbSetor">Setor</label><input id="fSetor" value="Oeste Superior"></div>
       <div><label>Inscrições até</label><input id="fAte" type="datetime-local"></div>
       <div><label>Idade mínima</label><input id="fIdade" type="number" min="0" max="100" value="18"></div>
     </div>
-    <label>Links dos ingressos (um por linha)</label>
+    <div id="boxLinks"><label>Links dos ingressos (um por linha)</label>
     <textarea id="fLinks" placeholder="https://...&#10;https://..."></textarea>
-    <div class="ajuda" id="fLinksInfo">Cada ganhador recebe um link, na ordem do sorteio. Pode deixar para colocar depois.</div>
+    <div class="ajuda" id="fLinksInfo">Cada ganhador recebe um link, na ordem do sorteio. Pode deixar para colocar depois.</div></div>
     <label>Link do canal do WhatsApp</label>
     <input id="fGrupo" placeholder="https://whatsapp.com/channel/...">
     <div class="ajuda">Usado nos convites para amigos da página de inscrição. Fica salvo para os próximos eventos.</div>
@@ -147,13 +150,13 @@
     <input id="fConvites" type="number" min="0" max="20" value="5">
     <div class="ajuda">Regra para participar: na inscrição ele toca em "Convidar amigos" e escolhe os amigos no WhatsApp dele. Não há limite: cada amigo que se inscrever pelo convite dele vale +1 número da sorte. Coloque 0 para não exigir o convite. Só vale se o link do canal estiver preenchido.</div>
     <label>Quantidade de sorteados</label><input id="fQtd" type="number" min="1" max="500" placeholder="Ex.: 5 ou 10">
-    <label>🎂 Ingressos só para aniversariantes do mês</label><input id="fAniv" type="number" min="0" max="50" value="0">
+    <label>🎂 Quantos vão só para aniversariantes do mês</label><input id="fAniv" type="number" min="0" max="50" value="0">
     <div class="ajuda">Sorteio separado, feito antes do geral, só entre quem faz aniversário no mês do jogo. Faz parte da quantidade de sorteados (ex.: 6 sorteados, 1 para aniversariante). Coloque 0 para não ter.</div>
     <label>🏆 Prêmio para quem mais convidar</label><input id="fPremioConv" placeholder="Ex.: Assistir ao jogo no camarote das Lojas Oficiais do Flamengo – Setor Oeste">
     <div class="ajuda">Vai para quem tiver mais amigos inscritos pelo próprio convite (empate: quem chegou primeiro). Não entra no sorteio. Deixe em branco para não ter.</div>
     <label>Mensagem para o vencedor</label>
     <textarea id="fMsg" style="min-height:150px"></textarea>
-    <div class="ajuda">Campos automáticos: <b>{nome}</b> (primeiro nome), <b>{nome_completo}</b>, <b>{jogo}</b>, <b>{data}</b>, <b>{hora}</b>, <b>{setor}</b>, <b>{link}</b>. Use *texto* para negrito no WhatsApp.</div>
+    <div class="ajuda">Campos automáticos: <b>{nome}</b> (primeiro nome), <b>{nome_completo}</b>, <b>{premio}</b>, <b>{jogo}</b>, <b>{data}</b>, <b>{hora}</b>, <b>{setor}</b>, <b>{link}</b>. Use *texto* para negrito no WhatsApp.</div>
     <div class="acoes"><button class="btn ouro" id="fSalvar">Salvar</button><button class="btn" id="fCancelar">Cancelar</button></div>
   </div>
 
@@ -236,8 +239,13 @@
 const SUPABASE_URL='https://zqzijrbfugleqajcqkrt.supabase.co';
 const SUPABASE_KEY='sb_publishable_n9zvUxjFlOT79QmDNQ5tBA_AunmJBaD';
 const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
-const MSG_PADRAO='🏆 Parabéns, {nome}! Você foi o grande vencedor do *Vou pro Maraca* e vai curtir um dia de Maraca no jogo *{jogo}*, dia {data} às {hora}, no setor *{setor}*.\n\n🎟️ Seu ingresso: {link}\n\nFaça o cadastro da sua facial e torça muito! ⚽🔥';
+const MSG_PADRAO='🏆 Parabéns, {nome}! Você foi um dos grandes vencedores da *Nação Premiada* e vai curtir um dia de Maraca no jogo *{jogo}*, dia {data} às {hora}, no setor *{setor}*.\n\n🎟️ Seu ingresso: {link}\n\nFaça o cadastro da sua facial e torça muito! ⚽🔥';
 const TZ='America/Sao_Paulo';
+const MSGS={ingresso:null,
+  experiencia:'🏆 Parabéns, {nome}! Você foi um dos grandes vencedores da *Nação Premiada* e ganhou: *{premio}*! 🔴⚫\n\n📅 {data} às {hora}\n📍 {setor}\n\nEm breve enviaremos todos os detalhes. Prepare-se para viver essa experiência! ⚽🔥',
+  produto:'🏆 Parabéns, {nome}! Você foi um dos grandes vencedores da *Nação Premiada* e ganhou: *{premio}*! 🔴⚫\n\nEm breve entraremos em contato para combinar a entrega do seu prêmio. ⚽🔥'};
+const msgPadrao=t=>MSGS[t]||MSG_PADRAO;
+const ehPadrao=m=>!m||m===MSG_PADRAO||Object.values(MSGS).includes(m);
 const $=id=>document.getElementById(id);
 let eventos=[], atual=null, inscritos=[], fotos={}, editando=null;
 
@@ -325,15 +333,36 @@ function abrirForm(ev){
   $('fQtd').value=ev?.qtd_ganhadores||'';$('fMsg').value=ev?.mensagem||MSG_PADRAO;$('fLinks').oninput();mostrar('vForm');if(location.hash!=='#form')irPara('#form');
   $('fAniv').value=ev?.qtd_aniversariantes??0;
   $('fPremioConv').value=ev?(ev.premio_convites||''):(eventos.find(e=>e.premio_convites)?.premio_convites||'');
+  $('fTipo').value=ev?.tipo_premio||'ingresso'; $('fPremio').value=(ev&&ev.tipo_premio&&ev.tipo_premio!=='ingresso')?(ev.premio||''):'';
+  if(!ev) $('fMsg').value=msgPadrao($('fTipo').value);
+  ajustaTipo();
 }
+function ajustaTipo(){
+  const t=$('fTipo').value, ing=t==='ingresso';
+  $('lbNome').textContent = ing ? 'Jogo' : 'Título da promoção';
+  $('fNome').placeholder = ing ? 'Ex.: Flamengo x Vasco' : (t==='produto' ? 'Ex.: Manto da Nação' : 'Ex.: Visita ao Ninho do Urubu');
+  $('boxPremio').classList.toggle('hidden', ing);
+  $('fPremio').placeholder = t==='produto' ? 'Ex.: Camisa oficial 2026 autografada' : 'Ex.: Tour pelo Maracanã com acompanhante';
+  $('lbData').textContent = ing ? 'Data e hora do jogo' : (t==='produto' ? 'Data (opcional)' : 'Data e hora da experiência');
+  $('lbSetor').textContent = ing ? 'Setor' : 'Local';
+  $('boxSetor').classList.toggle('hidden', t==='produto');
+  $('boxLinks').classList.toggle('hidden', !ing);
+  if(!ing && $('fSetor').value==='Oeste Superior') $('fSetor').value='';
+  if(ing && !$('fSetor').value) $('fSetor').value='Oeste Superior';
+  if(ehPadrao($('fMsg').value.trim())) $('fMsg').value=msgPadrao(t);
+}
+$('fTipo').onchange=ajustaTipo;
 $('fSalvar').onclick=async()=>{
-  const ls=$('fLinks').value.split('\n').map(s=>s.trim()).filter(Boolean);
+  const tipo=$('fTipo').value, ing=tipo==='ingresso';
+  const ls=ing?$('fLinks').value.split('\n').map(s=>s.trim()).filter(Boolean):[];
   const qtd=parseInt($('fQtd').value)||ls.length;
-  const d={nome:$('fNome').value.trim(),data_evento:deInput($('fData').value),setor:$('fSetor').value.trim()||'Oeste Superior',
+  const d={tipo_premio:tipo,premio:ing?'Ingresso para o Maracanã':($('fPremio').value.trim()||$('fNome').value.trim()),nome:$('fNome').value.trim(),data_evento:deInput($('fData').value),setor:tipo==='produto'?'':($('fSetor').value.trim()||(ing?'Oeste Superior':'')),
     inscricoes_ate:deInput($('fAte').value),idade_minima:parseInt($('fIdade').value)||0,links_ingressos:ls,qtd_ganhadores:qtd,premio_convites:$('fPremioConv').value.trim()||null,qtd_aniversariantes:Math.max(0,Math.min(parseInt($('fAniv').value)||0,qtd)),mensagem:$('fMsg').value.trim()||MSG_PADRAO,link_grupo:$('fGrupo').value.trim()||null,convites_minimos:Math.max(0,Math.min(20,parseInt($('fConvites').value)||0))};
   if(d.link_grupo&&!/^https:\/\/(chat\.|www\.)?whatsapp\.com\//.test(d.link_grupo)&&!confirm('O link do canal normalmente começa com https://whatsapp.com/channel/ — salvar assim mesmo?'))return;
-  if(!d.nome)return toast('Informe o jogo.',true);
-  if(!d.data_evento)return toast('Informe a data e hora do jogo.',true);
+  if(!d.nome)return toast(ing?'Informe o jogo.':'Informe o título da promoção.',true);
+  if(!ing&&!$('fPremio').value.trim())return toast('Informe o que será sorteado.',true);
+  if(ing&&!d.data_evento)return toast('Informe a data e hora do jogo.',true);
+  if(tipo==='experiencia'&&!d.data_evento)return toast('Informe a data e hora da experiência.',true);
   if(!d.inscricoes_ate)return toast('Informe até quando vão as inscrições.',true);
   if(!qtd||qtd<1)return toast('Informe quantas pessoas serão sorteadas.',true);
   if(ls.length&&ls.length<qtd&&!confirm(`Você colocou ${ls.length} link(s) para ${qtd} sorteados. Os que ficarem sem link podem receber depois. Salvar assim?`))return;
@@ -362,7 +391,7 @@ async function carregarInscritos(){
   try{const {data}=await tentar(()=>sb.from('inscricoes').select('*').eq('evento_id',atual.id).order('created_at',{ascending:false}));inscritos=data||[]}
   catch(e){toast('Erro ao carregar inscritos: '+erroMsg(e),true)}
   $('dInscritos').textContent=inscritos.length;
-  if(atual.qtd_aniversariantes>0){const na=inscritos.filter(ehAniv).length;$('dInfo').innerHTML+=`<br>🎂 ${atual.qtd_aniversariantes} ingresso(s) para aniversariantes de ${MESES[mesEvento()]} · ${na} ${na===1?'aniversariante inscrito':'aniversariantes inscritos'}`;}
+  if(atual.qtd_aniversariantes>0){const na=inscritos.filter(ehAniv).length;$('dInfo').innerHTML+=`<br>🎂 ${atual.qtd_aniversariantes} ${uniEv(atual.qtd_aniversariantes)} para aniversariantes de ${MESES[mesEvento()]} · ${na} ${na===1?'aniversariante inscrito':'aniversariantes inscritos'}`;}
   await carregarFotos();renderResultado();renderRanking();renderInscritos();
 }
 async function carregarFotos(){
@@ -377,6 +406,8 @@ function semFoto(p,cls){return `<div class="${cls} semfoto" title="Sem selfie">$
 function fotoHtml(p){if(!p.selfie_path)return semFoto(p,'foto');const u=fotos[p.selfie_path]||'';return `<img class="foto" loading="lazy" src="${u}" alt="" onclick="verFoto(event,'${p.selfie_path}')">`}
 function verFoto(e,p){e.stopPropagation();if(!fotos[p])return;$('ovImg').src=fotos[p];$('ovFoto').classList.remove('hidden')}
 const MESES=['','janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+const uniEv=n=>(atual&&atual.tipo_premio&&atual.tipo_premio!=='ingresso')?(n>1?'prêmios':'prêmio'):(n>1?'ingressos':'ingresso');
+const ehIng=()=>!atual||!atual.tipo_premio||atual.tipo_premio==='ingresso';
 const mesEvento=()=>+new Date(atual.data_evento||Date.now()).toLocaleDateString('pt-BR',{timeZone:TZ,month:'numeric'});
 const ehAniv=p=>+p.data_nascimento.slice(5,7)===mesEvento();
 function ranking(){
@@ -396,7 +427,7 @@ function renderRanking(){
 }
 function avisarCamarote(id,n){
   const p=inscritos.find(x=>x.id===id);
-  abrirZap(p.whatsapp,`🏆 Parabéns, ${primeiro(p.nome)}! Você foi quem mais convidou amigos no *Vou pro Maraca* (${n} ${n>1?'amigos inscritos':'amigo inscrito'}) e ganhou: *${atual.premio_convites}*!\n\n🆚 *${atual.nome}*\n📅 ${dia(atual.data_evento)} às ${hora(atual.data_evento)}\n\nEm breve enviaremos todos os detalhes. Faça o cadastro da sua facial e torça muito! ⚽🔥\n\n📸 *Para confirmar o prêmio*, responda esta mensagem com um *print mostrando que você segue o canal Lojas Oficiais do Flamengo* no WhatsApp.\n\n_Lojas Oficiais do Flamengo_ 🔴⚫`);
+  abrirZap(p.whatsapp,`🏆 Parabéns, ${primeiro(p.nome)}! Você foi quem mais convidou amigos na *Nação Premiada* (${n} ${n>1?'amigos inscritos':'amigo inscrito'}) e ganhou: *${atual.premio_convites}*!\n\n🆚 *${atual.nome}*\n📅 ${dia(atual.data_evento)} às ${hora(atual.data_evento)}\n\nEm breve enviaremos todos os detalhes. Faça o cadastro da sua facial e torça muito! ⚽🔥\n\n📸 *Para confirmar o prêmio*, responda esta mensagem com um *print mostrando que você segue o canal Lojas Oficiais do Flamengo* no WhatsApp.\n\n_Lojas Oficiais do Flamengo_ 🔴⚫`);
 }
 function numerosDe(p){return 1+inscritos.filter(x=>x.indicado_por===p.id).length}
 function indicadoPor(p){const q=p.indicado_por&&inscritos.find(x=>x.id===p.indicado_por);return q?q.nome:''}
@@ -433,7 +464,7 @@ function editarInscrito(id){
   const p=inscritos.find(x=>x.id===id);if(!p)return;editId=id;
   $('eFoto').src=p.selfie_path?(fotos[p.selfie_path]||''):'';$('eFoto').style.display=p.selfie_path?'':'none';$('eNome').value=p.nome;$('eNasc').value=p.data_nascimento;
   $('eZap').value=fmtZap(p.whatsapp);
-  $('eLinkBox').classList.toggle('hidden',p.resultado!=='ganhador');$('eLink').value=p.ingresso_link||'';
+  $('eLinkBox').classList.toggle('hidden',p.resultado!=='ganhador'||!ehIng());$('eLink').value=p.ingresso_link||'';
   $('mdInsc').classList.remove('hidden');
 }
 function fecharEdit(){$('mdInsc').classList.add('hidden');editId=null}
@@ -460,8 +491,8 @@ $('eExcluir').onclick=async()=>{
 
 // ---------- mensagem do vencedor ----------
 function mensagem(p){
-  return (p.premio_aniversario?`🎂 *Feliz aniversário!* Você ganhou o ingresso especial dos aniversariantes de ${MESES[mesEvento()]}!\n\n`:'')+(atual.mensagem||MSG_PADRAO).replaceAll('{nome}',primeiro(p.nome)).replaceAll('{nome_completo}',p.nome).replaceAll('{jogo}',atual.nome)
-    .replaceAll('{data}',dia(atual.data_evento)).replaceAll('{hora}',hora(atual.data_evento)).replaceAll('{setor}',atual.setor).replaceAll('{link}',p.ingresso_link||'(link será enviado em seguida)')+`\n\n📸 *Para confirmar o prêmio*, responda esta mensagem com um *print mostrando que você segue o canal Lojas Oficiais do Flamengo* no WhatsApp.`;
+  return (p.premio_aniversario?`🎂 *Feliz aniversário!* Você ganhou o ${ehIng()?'ingresso':'prêmio'} especial dos aniversariantes de ${MESES[mesEvento()]}!\n\n`:'')+(atual.mensagem||MSG_PADRAO).replaceAll('{nome}',primeiro(p.nome)).replaceAll('{nome_completo}',p.nome).replaceAll('{jogo}',atual.nome)
+    .replaceAll('{data}',dia(atual.data_evento)).replaceAll('{hora}',hora(atual.data_evento)).replaceAll('{setor}',atual.setor||'').replaceAll('{premio}',atual.premio||atual.nome).replaceAll('{link}',p.ingresso_link||'(link será enviado em seguida)')+`\n\n📸 *Para confirmar o prêmio*, responda esta mensagem com um *print mostrando que você segue o canal Lojas Oficiais do Flamengo* no WhatsApp.`;
 }
 function renderResultado(){
   if(atual.status!=='sorteado')return;
@@ -469,10 +500,10 @@ function renderResultado(){
   const sup=inscritos.filter(p=>p.resultado==='suplente').sort((a,b)=>a.ordem-b.ordem);
   const desc=inscritos.filter(p=>p.resultado==='desclassificado');
   $('listaGanhadores').innerHTML=gan.map(p=>`<div class="pessoa ganhador"><div class="ordem">${p.ordem}</div>${fotoHtml(p)}<div class="pinfo"><b>${esc(p.nome)}</b>${p.premio_aniversario?'<span class="tagAniv">🎂 Ingresso dos aniversariantes</span>':''}<small>${dadosPessoa(p,true)}</small>
-    ${p.ingresso_link?`<small>🎟️ <a href="${esc(p.ingresso_link)}" target="_blank" style="color:var(--ouro2)">ingresso</a></small>`:'<span class="semlink">⚠️ sem link de ingresso</span>'}
+    ${!ehIng()?'':p.ingresso_link?`<small>🎟️ <a href="${esc(p.ingresso_link)}" target="_blank" style="color:var(--ouro2)">ingresso</a></small>`:'<span class="semlink">⚠️ sem link de ingresso</span>'}
     ${p.avisado_em?`<span class="avisado"> ✅ avisado ${dataHora(p.avisado_em)}</span>`:''}
     <div class="pbtns"><button class="btn zap sm" onclick="avisar('${p.id}')">📲 Avisar no WhatsApp</button><button class="btn sm" onclick="copiar(mensagem(inscritos.find(x=>x.id==='${p.id}')))">Copiar msg</button><button class="btn sm" onclick="editarInscrito('${p.id}')">✏️ Editar</button><button class="btn perigo sm" onclick="desclassificar('${p.id}')">Desclassificar</button></div></div></div>`).join('')||'<p class="muted">Nenhum ganhador.</p>';
-  const semLink=gan.filter(p=>!p.ingresso_link).length,livres=linksLivres().length;
+  const semLink=ehIng()?gan.filter(p=>!p.ingresso_link).length:0,livres=linksLivres().length;
   $('acoesRes').innerHTML=semLink&&livres?`<button class="btn ouro sm" onclick="distribuirLinks()">🎟️ Distribuir ${Math.min(semLink,livres)} link(s) pendente(s)</button>`:semLink?`<p class="ajuda">${semLink} ganhador(es) sem link. Toque em ✏️ Editar e cole mais links de ingresso.</p>`:'';
   $('tSup').classList.toggle('hidden',!sup.length&&!desc.length);
   $('listaSuplentes').innerHTML=sup.map(p=>`<div class="pessoa"><div class="ordem" style="font-size:20px">${p.ordem}</div>${fotoHtml(p)}<div class="pinfo"><b>${esc(p.nome)}</b><small>${dadosPessoa(p,true)}</small>
@@ -482,7 +513,7 @@ function renderResultado(){
 function linksLivres(){const usados=new Set(inscritos.filter(p=>p.resultado==='ganhador'&&p.ingresso_link).map(p=>p.ingresso_link.trim()));return links(atual).filter(l=>!usados.has(l))}
 async function avisar(id){
   const p=inscritos.find(x=>x.id===id);
-  if(!p.ingresso_link&&!confirm('Este ganhador ainda não tem link de ingresso. Avisar mesmo assim?'))return;
+  if(ehIng()&&!p.ingresso_link&&!confirm('Este ganhador ainda não tem link de ingresso. Avisar mesmo assim?'))return;
   abrirZap(p.whatsapp,mensagem(p));
   const agora=new Date().toISOString();
   const {error}=await sb.from('inscricoes').update({avisado_em:agora}).eq('id',id);
@@ -511,7 +542,7 @@ $('dCopiar').onclick=()=>copiar($('dLink').value);
 $('dConvite').onclick=()=>abrirZap('',textoDivulgacao());
 $('dCopiarDiv').onclick=()=>copiar(textoDivulgacao());
 function textoDivulgacao(){
-  const n=atual.qtd_ganhadores, na=atual.qtd_aniversariantes||0, sem=new Date(atual.data_evento).toLocaleDateString('pt-BR',{timeZone:TZ,weekday:'long'});
+  const tipo=atual.tipo_premio||'ingresso', n=atual.qtd_ganhadores, na=atual.qtd_aniversariantes||0, sem=new Date(atual.data_evento).toLocaleDateString('pt-BR',{timeZone:TZ,weekday:'long'});
   const cap=t=>t.charAt(0).toUpperCase()+t.slice(1).replace('-feira','');
   const ate=new Date(atual.inscricoes_ate), ateSem=cap(ate.toLocaleDateString('pt-BR',{timeZone:TZ,weekday:'long'})).toLowerCase();
   const h=x=>hora(x).replace(':','h');
@@ -519,16 +550,25 @@ function textoDivulgacao(){
   return (
 `🔴⚫ *LOJAS OFICIAIS DO FLAMENGO* ⚫🔴
 ${L}
-⚽ *VOU PRO MARACA* 🏟️
-_Sorteio de ingressos_
+🎁 *NAÇÃO PREMIADA*
+_Sua paixão vale prêmios_
 ${L}
 
-🎉 As *Lojas Oficiais do Flamengo* vão sortear *${n} ${n>1?'torcedores':'torcedor'}* para ver o Mengão no Maraca!
+`+(tipo==='ingresso'
+? `🎉 Vamos sortear *${n} ${n>1?'ingressos':'ingresso'}* para ver o Mengão no Maraca!
 
 🆚 *${atual.nome}*
 📅 *${cap(sem)}, ${dia(atual.data_evento)}* – ${h(atual.data_evento)}
 🎟️ *${n} ingresso${n>1?'s':''}* – ${atual.setor}
-`+(na>0?`🎂 *${na} ${na>1?'ingressos':'ingresso'} só para aniversariantes de ${MESES[mesEvento()]}!*\n`:'')+(atual.premio_convites?`🏆 *Quem mais convidar amigos:* ${atual.premio_convites}!\n`:'')+`
+`
+: `🎉 Vamos sortear: *${atual.premio||atual.nome}*!
+
+${tipo==='produto'?'🎁':'⭐'} *${atual.nome}*
+`+(atual.data_evento&&tipo==='experiencia'?`📅 *${cap(sem)}, ${dia(atual.data_evento)}* – ${h(atual.data_evento)}
+`:'')+(atual.setor&&tipo==='experiencia'?`📍 ${atual.setor}
+`:'')+`👥 *${n} ${n>1?'ganhadores':'ganhador'}*
+`)
++(na>0?`🎂 *${na} ${uniEv(na)} só para aniversariantes de ${MESES[mesEvento()]}!*\n`:'')+(atual.premio_convites?`🏆 *Quem mais convidar amigos:* ${atual.premio_convites}!\n`:'')+`
 👇 *INSCREVA-SE AQUI* 👇
 ${linkInscricao(atual)}
 
@@ -546,7 +586,7 @@ ${atual.convites_minimos>0&&atual.link_grupo?'3️⃣':'2️⃣'} *Quanto mais a
 `+(atual.premio_convites?`
 🏆 *Quem fizer o maior número de convites gerando inscrição* ganha: *${atual.premio_convites}*! Empate: vence quem chegou primeiro ao número. Esse prêmio é separado do sorteio.
 `:'')+(na>0?`
-🎂 *Aniversariantes de ${MESES[mesEvento()]}* têm um *sorteio separado*: ${na} ${na>1?'ingressos são sorteados':'ingresso é sorteado'} só entre eles, antes do sorteio geral. Os números da sorte também valem: *aniversariante que convida mais amigos tem mais chances!* Quem não ganhar continua concorrendo no geral.
+🎂 *Aniversariantes de ${MESES[mesEvento()]}* têm um *sorteio separado*: ${na} ${uniEv(na)} ${na>1?'são sorteados':'é sorteado'} só entre eles, antes do sorteio geral. Os números da sorte também valem: *aniversariante que convida mais amigos tem mais chances!* Quem não ganhar continua concorrendo no geral.
 `:'')+`
 🔞 Uma inscrição por WhatsApp. Somente maiores de ${atual.idade_minima||18} anos.
 
@@ -569,7 +609,7 @@ $('dCsv').onclick=()=>{
 };
 $('bCopiarRes').onclick=()=>{
   const gan=inscritos.filter(p=>p.resultado==='ganhador').sort((a,b)=>a.ordem-b.ordem);
-  copiar(`🏆 *Resultado – Vou pro Maraca*\n${atual.nome} · ${dia(atual.data_evento)}\n\n`+gan.map((p,i)=>`${i+1}. ${curto(p.nome)} – WhatsApp final ${p.whatsapp.slice(-4)}`).join('\n')+`\n\nOs vencedores serão avisados no privado. Parabéns! 🎉⚽`);
+  copiar(`🏆 *Resultado – Nação Premiada*\n${atual.nome} · ${dia(atual.data_evento)}\n\n`+gan.map((p,i)=>`${i+1}. ${curto(p.nome)} – WhatsApp final ${p.whatsapp.slice(-4)}`).join('\n')+`\n\nOs vencedores serão avisados no privado. Parabéns! 🎉⚽`);
 };
 
 // ---------- sorteio ----------
@@ -577,7 +617,7 @@ $('bSortear').onclick=async()=>{
   if(!inscritos.length)return toast('Ainda não há inscritos.',true);
   const sup=Math.max(0,parseInt($('sSuplentes').value)||0);
   const aberto=new Date()<new Date(atual.inscricoes_ate);
-  if(!confirm(`${aberto?'⚠️ As inscrições ainda estão abertas e serão encerradas agora.\n\n':''}Sortear ${atual.qtd_ganhadores} ganhador(es) + ${sup} suplente(s) entre ${inscritos.length} inscritos (${inscritos.reduce((t,p)=>t+numerosDe(p),0)} números da sorte)?\n\n${atual.qtd_aniversariantes>0?`1º: sorteio separado de ${atual.qtd_aniversariantes} ingresso(s) entre os aniversariantes de ${MESES[mesEvento()]} (${inscritos.filter(ehAniv).length} inscritos).\n2º: sorteio geral dos demais ingressos.\n\n`:''}Quem tem mais números tem mais chance, mas cada pessoa só ganha uma vez.\n\nO sorteio só pode ser feito uma vez.`))return;
+  if(!confirm(`${aberto?'⚠️ As inscrições ainda estão abertas e serão encerradas agora.\n\n':''}Sortear ${atual.qtd_ganhadores} ganhador(es) + ${sup} suplente(s) entre ${inscritos.length} inscritos (${inscritos.reduce((t,p)=>t+numerosDe(p),0)} números da sorte)?\n\n${atual.qtd_aniversariantes>0?`1º: sorteio separado de ${atual.qtd_aniversariantes} ${uniEv(atual.qtd_aniversariantes)} entre os aniversariantes de ${MESES[mesEvento()]} (${inscritos.filter(ehAniv).length} inscritos).\n2º: sorteio geral dos demais ingressos.\n\n`:''}Quem tem mais números tem mais chance, mas cada pessoa só ganha uma vez.\n\nO sorteio só pode ser feito uma vez.`))return;
   $('bSortear').disabled=true;$('ovTit').textContent='Sorteando…';$('ovSorteio').classList.remove('hidden');
   let fim=false,vel=60;const nomes=inscritos.map(p=>p.nome);
   (function gira(){if(fim)return;$('roleta').textContent=nomes[Math.floor(Math.random()*nomes.length)];vel=Math.min(vel*1.04,260);setTimeout(gira,vel)})();
