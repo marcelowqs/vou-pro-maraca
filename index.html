@@ -373,9 +373,9 @@ async function atualizarNumeros(){
     $('listaAmigosBox').classList.toggle('hidden',!lst.length);
     if(premioConv){
       const pos=data&&data.posicao, lid=(data&&data.lider)||0; let t;
-      if(a>0 && pos===1) t=`🏆 <b>Você está em 1º lugar</b> no ranking de convites! Continue chamando a galera para garantir o camarote.`;
+      if(a>0 && pos===1) t=`🏆 <b>Você está em 1º lugar</b> no ranking de convites! Continue chamando a galera para garantir o prêmio: <b>${esc2(premioConv)}</b>.`;
       else if(a>0) t=`🏆 Você está em <b>${pos}º lugar</b> no ranking de convites. O líder tem <b>${lid}</b> ${lid>1?'amigos inscritos':'amigo inscrito'}.`;
-      else t = lid>0 ? `🏆 O líder do ranking de convites tem <b>${lid}</b> ${lid>1?'amigos inscritos':'amigo inscrito'}. Chame seus amigos e dispute o camarote!` : `🏆 Ninguém pontuou ainda no ranking de convites. Saia na frente!`;
+      else t = lid>0 ? `🏆 O líder do ranking de convites tem <b>${lid}</b> ${lid>1?'amigos inscritos':'amigo inscrito'}. Chame seus amigos e dispute o prêmio: <b>${esc2(premioConv)}</b>!` : `🏆 Ninguém pontuou ainda no ranking de convites. Saia na frente!`;
       $('rankTxt').innerHTML=t; $('rankTxt').classList.remove('hidden');
     }
   }catch(e){}
@@ -409,7 +409,7 @@ $('atualizarNumeros').onclick=async()=>{ await atualizarNumeros(); toast('Númer
   $('evAte').textContent=fmtData(evento.inscricoes_ate);
   $('evIdade').textContent = evento.idade_minima>0 ? `Somente maiores de ${evento.idade_minima} anos. Uma inscrição por WhatsApp.` : 'Uma inscrição por WhatsApp.';
   $('eventoCard').classList.remove('hidden');
-  const ex=[]; if(premioConv) ex.push('🏆 Prêmio extra para quem mais convidar amigos'); if(qtdAniv>0) ex.push(`🎂 Sorteio separado para aniversariantes de ${MESES[mesAniv]}`);
+  const ex=[]; if(premioConv) ex.push(`🏆 Quem mais convidar amigos ganha: ${esc2(premioConv)}`); if(qtdAniv>0) ex.push(`🎂 Sorteio separado para aniversariantes de ${MESES[mesAniv]}`);
   if(ex.length) $('chamadaAniv').innerHTML=ex.map(x=>`<span>${x}</span>`).join('');
   if(evento.sorteado){ mostrarErro('Sorteio realizado! 🏆','Este sorteio já aconteceu. Os vencedores foram avisados pelo WhatsApp.'); return; }
   if(!evento.aberto){ mostrarErro('Inscrições encerradas','O prazo de inscrição deste sorteio terminou. Aguarde o resultado no canal!'); return; }
