@@ -97,6 +97,10 @@
   .comoPart{display:block;margin-top:14px;padding:10px 12px;border-radius:10px;background:rgba(255,255,255,.12);font-size:15px}
   .presente{font-size:38px;line-height:1;margin:2px 0 6px;filter:drop-shadow(0 3px 10px rgba(0,0,0,.5))}
   .amigos.pendente{border-color:var(--erro);box-shadow:0 0 0 3px rgba(255,107,107,.25)}
+  .listaAmigos{margin-top:12px;text-align:left;padding:10px 12px;border-radius:10px;background:rgba(255,255,255,.06);font-size:14px}
+  .listaAmigos .amg{display:flex;justify-content:space-between;gap:10px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.08)}
+  .listaAmigos .amg span:last-child{color:var(--suave);font-size:12.5px;white-space:nowrap}
+  .listaAmigos small{display:block;margin-top:8px;color:var(--suave);font-size:12px;line-height:1.4}
   .hidden{display:none!important}
   footer{text-align:center;color:#8fa8cc;font-size:12px;margin-top:28px}
 </style>
@@ -140,6 +144,12 @@
     <label for="zap">WhatsApp (com DDD)</label>
     <input type="tel" id="zap" inputmode="numeric" autocomplete="tel-national" placeholder="(21) 99999-9999" maxlength="15">
     <div class="dica" id="d-zap"></div>
+
+    <div id="boxQuem" class="hidden">
+      <label for="quem">Quem te convidou? <span style="font-weight:400;color:var(--suave)">(opcional)</span></label>
+      <input type="tel" id="quem" inputmode="numeric" placeholder="WhatsApp do amigo que te chamou" maxlength="15">
+      <div class="obs" style="color:var(--suave)">Coloque o WhatsApp de quem te convidou. Assim ele ganha +1 número da sorte. 🍀</div>
+    </div>
 
     <div class="passosTit hidden" id="passosTit">Para participar, faça os passos abaixo 👇</div>
 
@@ -193,6 +203,8 @@
       <div class="numGrande" id="numQtd">1</div>
       <div class="muted" id="numTxt" style="font-size:14px"></div>
       <div class="ranking hidden" id="rankTxt"></div>
+      <div class="listaAmigos hidden" id="listaAmigosBox"><b>👥 Amigos que contaram para você</b><div id="listaAmigos"></div>
+        <small>Só conta quem se inscreveu pelo seu link ou colocou seu WhatsApp em "Quem te convidou?". Toque em 🔄 para atualizar.</small></div>
       <p class="muted" style="font-size:14px;margin:10px 0 0">Quanto mais amigos você chamar, maiores as suas chances! Cada amigo que se inscrever pelo <b>seu</b> convite vale <b>+1 número da sorte</b>. Sem limite.</p>
       <button type="button" class="btn zap" id="convidarMais">📲 Convidar mais amigos</button>
       <button type="button" class="btn sec" id="atualizarNumeros">🔄 Atualizar meus números</button>
@@ -295,7 +307,7 @@ $('form').addEventListener('submit', async e=>{
     }
     await tentar(async()=>{ const {data,error}=await sb.rpc('inscrever_v6',{ p_codigo:codigo, p_id:id, p_nome:$('nome').value.trim(),
         p_nascimento:dataNasc($('nasc').value).iso, p_whatsapp:so($('zap').value), p_selfie_path:path,
-        p_convidou: convidou, p_meu_ref: meuRef, p_ref: refRecebido || null, p_comunicacao: $('novidades').checked });
+        p_convidou: convidou, p_meu_ref: meuRef, p_ref: refRecebido || (so($('quem').value).length>=10 ? so($('quem').value) : null), p_comunicacao: $('novidades').checked });
       if(error){ const er=new Error(error.message); if(!/fetch|network|timeout/i.test(error.message)) er.naoRepetir=true; throw er; }
       if(data && data.ref_code){ meuRef=data.ref_code; guardar('vpm_meuref_'+codigo, meuRef); } });
     guardar('vpm_'+codigo, $('zap').value);
@@ -324,7 +336,10 @@ const uni=n=> tipoPremio==='ingresso' ? (n>1?'ingressos':'ingresso') : (n>1?'pr�
 let linkGrupo=null, convitesMin=0, convidou=false, seguiu=false, qtdAniv=0, mesAniv=0, premioConv='';
 const esc2=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const MESES=['','janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
-const refRecebido=(new URLSearchParams(location.search).get('r')||'').replace(/[^a-zA-Z0-9]/g,'').toLowerCase();
+function mascaraZap(v){ v=String(v).replace(/\D/g,'').slice(0,11);
+  if(v.length>10) return v.replace(/(\d{2})(\d{5})(\d{0,4})/,'($1) $2-$3'); if(v.length>6) return v.replace(/(\d{2})(\d{4})(\d{0,4})/,'($1) $2-$3'); if(v.length>2) return v.replace(/(\d{2})(\d+)/,'($1) $2'); return v; }
+let refRecebido=(new URLSearchParams(location.search).get('r')||'').replace(/[^a-zA-Z0-9]/g,'').toLowerCase();
+if(refRecebido) guardar('vpm_refin_'+codigo, refRecebido); else refRecebido = ler('vpm_refin_'+codigo) || '';
 let meuRef = ler('vpm_meuref_'+codigo) || Array.from(crypto.getRandomValues(new Uint8Array(8)),b=>'abcdefghjkmnpqrstuvwxyz23456789'[b%31]).join('');
 guardar('vpm_meuref_'+codigo, meuRef);
 const meuLink=()=>{ const u=new URL(location.href); u.search=''; u.hash=''; u.searchParams.set('e',codigo); u.searchParams.set('r',meuRef); return u.href; };
@@ -354,13 +369,14 @@ function marcarConvidou(){ convidou=true; $('convOk').classList.remove('hidden')
 $('btnSeguir').onclick=marcarSeguiu;
 $('btnJaSigo').onclick=marcarSeguiu;
 const chaveRasc=()=>'vpm_rasc_'+codigo;
-function salvarRascunho(){ try{ localStorage.setItem(chaveRasc(), JSON.stringify({nome:$('nome').value,nasc:$('nasc').value,zap:$('zap').value,seguiu,convidou,t:Date.now()})); }catch(e){} }
+function salvarRascunho(){ try{ localStorage.setItem(chaveRasc(), JSON.stringify({nome:$('nome').value,nasc:$('nasc').value,zap:$('zap').value,quem:$('quem').value,seguiu,convidou,t:Date.now()})); }catch(e){} }
 function restaurarRascunho(){
   try{ const r=JSON.parse(localStorage.getItem(chaveRasc())||'null'); if(!r || Date.now()-r.t>3*86400000) return;
-    if(r.nome) $('nome').value=r.nome; if(r.nasc) $('nasc').value=r.nasc; if(r.zap) $('zap').value=r.zap;
+    if(r.nome) $('nome').value=r.nome; if(r.nasc) $('nasc').value=r.nasc; if(r.zap) $('zap').value=r.zap; if(r.quem) $('quem').value=r.quem;
     if(r.seguiu) marcarSeguiu(); if(r.convidou) marcarConvidou();
   }catch(e){}
 }
+$('quem').addEventListener('input',e=>{ e.target.value=mascaraZap(e.target.value); salvarRascunho(); });
 ['nome','nasc','zap'].forEach(id=>$(id).addEventListener('input',salvarRascunho));
 $('btnConvidarForm').onclick=()=>{
   if(!linkGrupo) return;
@@ -402,6 +418,9 @@ async function atualizarNumeros(){
     const n=(data&&data.numeros)||1, a=(data&&data.amigos)||0;
     $('numQtd').textContent=n;
     $('numTxt').textContent = a ? `${a} ${a>1?'amigos se inscreveram':'amigo se inscreveu'} pelo seu convite 👏` : 'Nenhum amigo se inscreveu pelo seu convite ainda.';
+    const lst=(data&&data.lista)||[];
+    $('listaAmigos').innerHTML=lst.map((x,i)=>`<div class="amg"><span>${i+1}. ${esc2(x.nome)}</span><span>${esc2(x.quando)}</span></div>`).join('');
+    $('listaAmigosBox').classList.toggle('hidden',!lst.length);
     if(premioConv){
       const pos=data&&data.posicao, lid=(data&&data.lider)||0; let t;
       if(a>0 && pos===1) t=`🏆 <b>Você está em 1º lugar</b> no ranking de convites! Continue chamando a galera para garantir o camarote.`;
@@ -446,6 +465,7 @@ $('atualizarNumeros').onclick=async()=>{ await atualizarNumeros(); toast('Númer
   if(!evento.aberto){ mostrarErro('Inscrições encerradas','O prazo de inscrição deste sorteio terminou. Aguarde o resultado no canal!'); return; }
   const ja=ler('vpm_'+codigo); if(ja){ mostrarSucesso(ja); return; }
   $('form').classList.remove('hidden');
+  if(!refRecebido) $('boxQuem').classList.remove('hidden');
   restaurarRascunho();
 })();
 </script>

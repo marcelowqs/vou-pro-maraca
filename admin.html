@@ -101,6 +101,10 @@
   .rkPts{flex:none;text-align:right;font-size:26px;font-weight:900;line-height:1}
   .rkPts small{display:block;font-size:11px;font-weight:600;color:var(--suave)}
   .lider .rkPts{color:#ffd36b}
+  .rkLinha{cursor:pointer}
+  .rkAmigos{margin:2px 0 8px 44px;padding:8px 10px;border-left:2px solid rgba(255,211,107,.5);font-size:13px}
+  .rkAmigos div{display:flex;justify-content:space-between;gap:8px;padding:3px 0}
+  .rkAmigos div span:last-child{color:var(--suave);white-space:nowrap;font-size:12px}
   .hidden{display:none!important}
   .busca{margin-top:4px}
   .tag{font-size:11px;font-weight:700;padding:2px 7px;border-radius:10px;margin-left:6px;vertical-align:2px}
@@ -499,17 +503,23 @@ function ranking(){
 function renderRanking(){
   const rkTodos=ranking(), temPremio=!!(atual.premio_convites&&atual.premio_convites.trim());
   $('cRanking').classList.toggle('hidden',!temPremio&&!rkTodos.length); if(!temPremio&&!rkTodos.length) return;
-  $('rkPremio').innerHTML= temPremio ? `Prêmio para o 1º lugar: <b>${esc(atual.premio_convites)}</b>. Conta só amigo que se inscreveu pelo link da pessoa. Empate: quem chegou primeiro ao número.` : 'Conta só amigo que se inscreveu pelo link da pessoa.';
+  $('rkPremio').innerHTML= temPremio ? `Prêmio para o 1º lugar: <b>${esc(atual.premio_convites)}</b>. Conta só amigo que se inscreveu pelo link da pessoa ou informou o WhatsApp dela. Empate: quem chegou primeiro ao número. <b>Toque em um nome para ver os amigos.</b>` : 'Conta só amigo que se inscreveu pelo link da pessoa.';
   $('rkAcoes').classList.toggle('hidden',!rkTodos.length);
   const rk=rkTodos.slice(0,20), aberto=new Date()<new Date(atual.inscricoes_ate)&&atual.status!=='sorteado';
   const med=i=>['🥇','🥈','🥉'][i]||`${i+1}º`;
-  $('listaRanking').innerHTML=rk.length?rk.map((x,i)=>`<div class="rkLinha ${i===0?'lider':''}"><div class="rkPos">${med(i)}</div><div class="rkNome">${esc(x.p.nome)}${i===0&&temPremio?`<small>🏆 ${aberto?'Liderando':'Ganhador do prêmio'}</small>`:''}</div><div class="rkPts">${x.n}<small>${x.n>1?'amigos':'amigo'}</small></div></div>
+  $('listaRanking').innerHTML=rk.length?rk.map((x,i)=>`<div class="rkLinha ${i===0?'lider':''}" onclick="verAmigos('${x.p.id}',this)" title="Ver amigos"><div class="rkPos">${med(i)}</div><div class="rkNome">${esc(x.p.nome)}${i===0&&temPremio?`<small>🏆 ${aberto?'Liderando':'Ganhador do prêmio'}</small>`:''}</div><div class="rkPts">${x.n}<small>${x.n>1?'amigos':'amigo'}</small></div></div>
     ${i===0&&!aberto&&temPremio?`<div class="pbtns" style="margin:4px 0 8px"><button class="btn zap sm" onclick="avisarCamarote('${x.p.id}',${x.n})">📲 Avisar o ganhador no WhatsApp</button></div>`:''}`).join('')
     +(rkTodos.length>20?`<p class="ajuda">+ ${rkTodos.length-20} pessoas com amigos inscritos.</p>`:'')
     :'<p class="muted">Ninguém trouxe amigos inscritos ainda.</p>';
   if(rk.length&&aberto&&temPremio) $('listaRanking').insertAdjacentHTML('beforeend','<p class="ajuda">O ganhador é definido quando as inscrições encerrarem. Aí aparece o botão para avisar.</p>');
 }
 // nome para divulgar: primeiro nome + inicial do sobrenome
+function verAmigos(id,el){
+  const prox=el.nextElementSibling;
+  if(prox&&prox.classList.contains('rkAmigos')){ prox.remove(); return; }
+  const fs=inscritos.filter(f=>f.indicado_por===id).sort((a,b)=>a.created_at<b.created_at?-1:1);
+  el.insertAdjacentHTML('afterend',`<div class="rkAmigos">${fs.map((f,i)=>`<div><span>${i+1}. ${esc(f.nome)}</span><span>${dataHora(f.created_at)}</span></div>`).join('')||'<div>Nenhum amigo.</div>'}</div>`);
+}
 const nomePublico=n=>{const p=n.trim().split(/\s+/);return p.length>1?`${p[0]} ${p[p.length-1][0]}.`:p[0]};
 $('rkCopiar').onclick=()=>{
   const rk=ranking().slice(0,10), med=i=>['🥇','🥈','🥉'][i]||`${i+1}º`;
