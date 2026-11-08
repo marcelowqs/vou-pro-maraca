@@ -99,7 +99,7 @@
   .lgpd{font-size:11.5px;color:var(--suave);line-height:1.4;margin:10px 0 0;text-align:center}
   .passo{margin-top:18px;padding:14px;border-radius:14px;border:1px solid #2f6b45;background:rgba(37,211,102,.07);text-align:left}
   .passo .muted{font-size:14px;margin:6px 0 0}
-  .passo .btn.grupo.destaque{margin:12px 0 0}
+  .passo .btn.grupo{margin:12px 0 0}
   .passoTit{font-weight:800;font-size:16px}
   .rulesBox summary{cursor:pointer;font-weight:800;font-size:14.5px;list-style:none}
   .rulesBox summary::-webkit-details-marker{display:none}
@@ -174,25 +174,25 @@
     <p class="muted" id="sucessoTxt"></p>
     <div class="avisoVip hidden" id="avisoAniv" style="background:rgba(255,255,255,.12);color:#fff"></div>
 
-    <div class="passo hidden" id="passoCanal">
-      <div class="passoTit"><span class="pnum">1</span> Siga o canal para poder receber o prêmio</div>
-      <p class="muted">Seguir o canal <b>Lojas Oficiais do Flamengo</b> no WhatsApp é <b>imprescindível para ganhar</b>. O resultado sai lá.</p>
-      <a class="btn grupo destaque" id="grupoFim" target="_blank" rel="noopener">💚 SEGUIR O CANAL NO WHATSAPP</a>
-    </div>
-
     <div class="passo hidden" id="passoAmigos">
-      <div class="passoTit"><span class="pnum">2</span> Quer mais chances? Convide seus amigos!</div>
+      <div class="passoTit"><span class="pnum">1</span> Ganhe mais chances: convide seus amigos!</div>
       <p class="muted">Cada amigo que se inscrever pelo <b>seu</b> convite vale <b>+1 número da sorte</b>. Sem limite!</p>
       <div class="ranking hidden" id="rankTxt"></div>
-      <button type="button" class="btn zap" id="convidarMais">📲 Convidar amigos no WhatsApp</button>
-      <div class="numeros" id="numerosBox">
-        <div class="numTit">🍀 Seus números da sorte</div>
-        <div class="numGrande" id="numQtd">1</div>
-        <div class="muted" id="numTxt" style="font-size:14px"></div>
-        <div class="listaAmigos hidden" id="listaAmigosBox"><b>👥 Amigos que contaram para você</b><div id="listaAmigos"></div>
-          <small>Só conta quem se inscreveu pelo seu link ou colocou seu WhatsApp em "Quem te convidou?".</small></div>
-        <button type="button" class="btn sec" id="atualizarNumeros">🔄 Atualizar meus números</button>
-      </div>
+      <button type="button" class="btn grupo destaque" id="convidarMais">📲 CONVIDAR AMIGOS NO WHATSAPP</button>
+    </div>
+    <div class="passo hidden" id="passoCanal">
+      <div class="passoTit"><span class="pnum">2</span> Agora siga o canal para poder receber o prêmio</div>
+      <p class="muted">Seguir o canal <b>Lojas Oficiais do Flamengo</b> no WhatsApp é <b>imprescindível para ganhar</b>. O resultado sai lá.</p>
+      <a class="btn grupo" id="grupoFim" target="_blank" rel="noopener">💚 SEGUIR O CANAL NO WHATSAPP</a>
+    </div>
+
+    <div class="numeros hidden" id="numerosBox">
+      <div class="numTit">🍀 Seus números da sorte</div>
+      <div class="numGrande" id="numQtd">1</div>
+      <div class="muted" id="numTxt" style="font-size:14px"></div>
+      <div class="listaAmigos hidden" id="listaAmigosBox"><b>👥 Amigos que contaram para você</b><div id="listaAmigos"></div>
+        <small>Só conta quem se inscreveu pelo seu link ou colocou seu WhatsApp em "Quem te convidou?".</small></div>
+      <button type="button" class="btn sec" id="atualizarNumeros">🔄 Atualizar meus números</button>
     </div>
     <p class="sorte">Boa sorte! 🍀</p>
   </div>
@@ -296,7 +296,7 @@ function mostrarSucesso(zap){
   const dn=$('nasc').value.match(/^\d{2}\/(\d{2})\//); const mesN=dn?+dn[1]:+(ler('vpm_mes_'+codigo)||0);
   if(dn) guardar('vpm_mes_'+codigo, mesN);
   if(qtdAniv>0 && mesN===mesAniv){ $('avisoAniv').innerHTML=`🎂 Você faz aniversário em ${MESES[mesAniv]}! Além do sorteio geral, você também concorre no <b>sorteio separado dos aniversariantes do mês</b>.`; $('avisoAniv').classList.remove('hidden'); }
-  if(linkGrupo){ $('conviteCard').classList.add('hidden'); $('passoCanal').classList.remove('hidden'); $('passoAmigos').classList.remove('hidden'); atualizarNumeros(); }
+  if(linkGrupo){ $('conviteCard').classList.add('hidden'); $('passoCanal').classList.remove('hidden'); $('passoAmigos').classList.remove('hidden'); $('numerosBox').classList.remove('hidden'); atualizarNumeros(); }
   $('sucessoTxt').innerHTML = `O sorteio acontece depois que as inscrições encerrarem (<b>${fmtData(evento.inscricoes_ate)}</b>). Se você ganhar, avisamos no WhatsApp <b>${zap}</b>.`;
   setTimeout(()=>$('sucesso').scrollIntoView({behavior:'smooth',block:'start'}),50);
 }
