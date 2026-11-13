@@ -115,7 +115,7 @@
 <body>
 <div class="wrap">
   <div class="top">
-    <h1 class="logo" onclick="irLista()"><span class="tituloAdm">🎁 NAÇÃO PREMIADA<small>Lojas Oficiais do Flamengo</small></span></h1>
+    <h1 class="logo" onclick="irLista()"><span class="tituloAdm">🎁 NAÇÃO PREMIADA<small>Lojas Oficiais do Flamengo · versão 13/11</small></span></h1>
     <button class="btn sm hidden" id="sair">Sair</button>
   </div>
 
@@ -531,7 +531,7 @@ function ranking(){
 function renderRanking(){
   const rkTodos=ranking(), temPremio=!!(atual.premio_convites&&atual.premio_convites.trim());
   $('cRanking').classList.toggle('hidden',!temPremio&&!rkTodos.length); if(!temPremio&&!rkTodos.length) return;
-  $('rkPremio').innerHTML= temPremio ? `Prêmio para o 1º lugar: <b>${esc(atual.premio_convites)}</b>. Conta só amigo que se inscreveu pelo link da pessoa ou informou o WhatsApp dela. Empate: quem chegou primeiro ao número. <b>Toque em um nome para ver os amigos.</b>` : 'Conta só amigo que se inscreveu pelo link da pessoa.';
+  $('rkPremio').innerHTML= `<div style="margin:4px 0 10px;padding:10px 12px;border-radius:12px;background:rgba(255,211,107,.10);color:#fff"><b>🎁 Prêmios desta promoção</b>${premiosEvento().map(x=>`<div style="margin-top:6px">${x.e} <b>${esc(x.t)}</b><br><small style="opacity:.8">${esc(x.d)}</small></div>`).join('')}</div>` + (temPremio ? `Conta só amigo que se inscreveu pelo link da pessoa ou informou o WhatsApp dela. Empate: quem chegou primeiro ao número. <b>Toque em um nome para ver os amigos.</b>` : 'Conta só amigo que se inscreveu pelo link da pessoa.');
   $('rkAcoes').classList.toggle('hidden',!rkTodos.length);
   const rk=rkTodos.slice(0,20), aberto=new Date()<new Date(atual.inscricoes_ate)&&atual.status!=='sorteado';
   const med=i=>['🥇','🥈','🥉'][i]||`${i+1}º`;
