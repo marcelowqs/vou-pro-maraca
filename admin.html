@@ -549,6 +549,17 @@ function verAmigos(id,el){
   el.insertAdjacentHTML('afterend',`<div class="rkAmigos">${fs.map((f,i)=>`<div><span>${i+1}. ${esc(f.nome)}</span><span>${dataHora(f.created_at)}</span></div>`).join('')||'<div>Nenhum amigo.</div>'}</div>`);
 }
 const nomePublico=n=>{const p=n.trim().split(/\s+/);return p.length>1?`${p[0]} ${p[p.length-1][0]}.`:p[0]};
+// lista de TODOS os prêmios do evento (camarote do ranking + sorteio geral + aniversariantes)
+function premiosEvento(){
+  const ing=ehIng(), qtd=atual.qtd_ganhadores||0, na=Math.min(atual.qtd_aniversariantes||0,qtd), ng=qtd-na;
+  const onde = ing ? (atual.setor?` – setor ${atual.setor}`:'') : (atual.premio?`: ${atual.premio}`:'');
+  const L=[];
+  if(atual.premio_convites) L.push({e:'🥇',t:atual.premio_convites.replace(/^Assistir ao jogo no c/i,'C'),d:'Para o 1º lugar no ranking de convites'});
+  if(ng>0) L.push({e:ing?'🎟️':'🎁',t:`${ng} ${uniEv(ng)}${onde}`,d:'Sorteio geral entre todos os inscritos'});
+  if(na>0) L.push({e:'🎂',t:`${na} ${uniEv(na)}${onde}`,d:`Sorteio só entre os aniversariantes de ${MESES[mesEvento()]}`});
+  return L;
+}
+function textoPremios(){ return premiosEvento().map(x=>`${x.e} *${x.t}*\n   ${x.d}`).join('\n'); }
 $('rkCopiar').onclick=()=>{
   const rk=ranking().slice(0,10), med=i=>['🥇','🥈','🥉'][i]||`${i+1}º`;
   const ate=`${dia(atual.inscricoes_ate)} às ${hora(atual.inscricoes_ate).replace(':','h')}`;
@@ -558,14 +569,20 @@ $('rkCopiar').onclick=()=>{
 
 `+rk.map((x,i)=>`${med(i)} ${nomePublico(x.p.nome)} — *${x.n}* ${x.n>1?'amigos':'amigo'}`).join('\n')+`
 
-`+(atual.premio_convites?`🏆 Quem terminar em 1º ganha: *${atual.premio_convites}*!\n`:'')+`🍀 Cada amigo que se inscrever pelo seu convite vale *+1 número da sorte* no sorteio.
+🎁 *PRÊMIOS DESTA PROMOÇÃO*
+${textoPremios()}
+
+🍀 Cada amigo que se inscrever pelo seu convite vale *+1 ponto no ranking* e *+1 número da sorte* nos sorteios.
 ⏳ Inscrições até *${ate}*. Ainda dá tempo de virar o jogo!
 
 👉 ${linkInscricao(atual)}`);
 };
 $('rkImagem').onclick=async()=>{
   const rk=ranking().slice(0,10); if(!rk.length) return;
-  const W=1080, linhaH=92, topo=330, H=topo+rk.length*linhaH+(atual.premio_convites?250:150);
+  const PR=premiosEvento();
+  const wrap=(t,max)=>{const out=[];let cur='';t.split(' ').forEach(w=>{if((cur+' '+w).trim().length>max&&cur){out.push(cur);cur=w}else cur=(cur+' '+w).trim()});if(cur)out.push(cur);return out};
+  PR.forEach(x=>{x.tl=wrap(x.t,42);x.dl=wrap(x.d,60);x.h=34+x.tl.length*40+x.dl.length*32});
+  const W=1080, linhaH=92, topo=330, H=topo+rk.length*linhaH+120+PR.reduce((a,x)=>a+x.h+14,0)+90;
   const c=document.createElement('canvas'); c.width=W; c.height=H; const g=c.getContext('2d');
   const fundo=g.createLinearGradient(0,0,0,H); fundo.addColorStop(0,'#7a0e17'); fundo.addColorStop(.35,'#1a0b0d'); fundo.addColorStop(1,'#0b0b0c'); g.fillStyle=fundo; g.fillRect(0,0,W,H);
   const brilho=g.createRadialGradient(W/2,0,10,W/2,0,700); brilho.addColorStop(0,'rgba(230,40,60,.45)'); brilho.addColorStop(1,'rgba(230,40,60,0)'); g.fillStyle=brilho; g.fillRect(0,0,W,H);
@@ -585,10 +602,16 @@ $('rkImagem').onclick=async()=>{
     g.textAlign='right'; g.font=`900 54px ${F}`; g.fillStyle=i===0?'#ffd36b':'#fff'; g.fillText(String(x.n),W-200,y+60);
     g.font=`600 28px ${F}`; g.fillStyle='#c9c3c4'; g.fillText(x.n>1?'amigos':'amigo',W-90,y+56);
   });
-  let y=topo+rk.length*linhaH+60; g.textAlign='center';
-  if(atual.premio_convites){ g.fillStyle='#fff'; g.font=`800 38px ${F}`; g.fillText('O 1º lugar ganha:',W/2,y); y+=52;
-    g.font=`700 34px ${F}`; g.fillStyle='#ffd36b'; const t=atual.premio_convites; const partes=t.length>48?[t.slice(0,t.lastIndexOf(' ',48)),t.slice(t.lastIndexOf(' ',48)+1)]:[t];
-    partes.forEach(p=>{g.fillText(p,W/2,y); y+=44;}); y+=20; }
+  let y=topo+rk.length*linhaH+56; g.textAlign='center';
+  g.fillStyle='#ffd36b'; g.font=`800 40px ${F}`; g.fillText('🎁 PRÊMIOS DESTA PROMOÇÃO',W/2,y); y+=34;
+  PR.forEach(x=>{
+    g.fillStyle='rgba(255,255,255,.07)'; g.beginPath(); g.roundRect?g.roundRect(60,y,W-120,x.h,22):g.rect(60,y,W-120,x.h); g.fill();
+    g.textAlign='left'; g.font=`700 46px ${F}`; g.fillStyle='#fff'; g.fillText(x.e,88,y+16+x.h/2);
+    let yy=y+46; g.font=`800 32px ${F}`; x.tl.forEach(l=>{g.fillText(l,160,yy); yy+=40;});
+    g.font=`500 26px ${F}`; g.fillStyle='#d9d2d3'; x.dl.forEach(l=>{g.fillText(l,160,yy-4); yy+=32;});
+    y+=x.h+14;
+  });
+  y+=44; g.textAlign='center';
   g.fillStyle='#e9e3e4'; g.font=`600 32px ${F}`; g.fillText(`Convide seus amigos! Inscrições até ${dia(atual.inscricoes_ate)}`,W/2,y);
   const blob=await new Promise(r=>c.toBlob(r,'image/png'));
   const arq=new File([blob],'ranking-nacao-premiada.png',{type:'image/png'});
@@ -777,7 +800,17 @@ $('dCsv').onclick=()=>{
 };
 $('bCopiarRes').onclick=()=>{
   const gan=inscritos.filter(p=>p.resultado==='ganhador').sort((a,b)=>a.ordem-b.ordem);
-  copiar(`🏆 *Resultado – Nação Premiada*\n${atual.nome} · ${dia(atual.data_evento)}\n\n`+gan.map((p,i)=>`${i+1}. ${curto(p.nome)} – WhatsApp final ${p.whatsapp.slice(-4)}`).join('\n')+`\n\nOs vencedores serão avisados no privado. Parabéns! 🎉⚽`);
+  const na=Math.min(atual.qtd_aniversariantes||0,gan.length);
+  const aniv=na>0?gan.filter(ehAniv).slice(0,na):[], geral=gan.filter(p=>!aniv.includes(p));
+  const ing=ehIng(), onde= ing ? (atual.setor?` – setor ${atual.setor}`:'') : (atual.premio?`: ${atual.premio}`:'');
+  const lin=p=>`• ${curto(p.nome)} – WhatsApp final ${p.whatsapp.slice(-4)}`;
+  const rk=ranking(), top=rk[0];
+  let t=`🏆 *RESULTADO – NAÇÃO PREMIADA* 🏆\n_Lojas Oficiais do Flamengo_\n*${atual.nome}*${atual.data_evento?` · ${dia(atual.data_evento)}`:''}\n`;
+  if(atual.premio_convites&&top) t+=`\n🥇 *${atual.premio_convites}*\nQuem mais convidou amigos:\n• ${curto(top.p.nome)} – *${top.n}* ${top.n>1?'amigos inscritos':'amigo inscrito'}\n`;
+  if(geral.length) t+=`\n${ing?'🎟️':'🎁'} *${geral.length} ${uniEv(geral.length)}${onde}* – sorteio geral\n`+geral.map(lin).join('\n')+'\n';
+  if(aniv.length) t+=`\n🎂 *${aniv.length} ${uniEv(aniv.length)}${onde}* – aniversariantes de ${MESES[mesEvento()]}\n`+aniv.map(lin).join('\n')+'\n';
+  t+=`\n📲 Os ganhadores serão avisados no privado e precisam mandar o print mostrando que seguem o canal.\nParabéns! 🎉🔴⚫`;
+  copiar(t);
 };
 
 // ---------- sorteio ----------
