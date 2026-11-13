@@ -554,27 +554,28 @@ function premiosEvento(){
   const ing=ehIng(), qtd=atual.qtd_ganhadores||0, na=Math.min(atual.qtd_aniversariantes||0,qtd), ng=qtd-na;
   const onde = ing ? (atual.setor?` – setor ${atual.setor}`:'') : (atual.premio?`: ${atual.premio}`:'');
   const L=[];
-  if(atual.premio_convites) L.push({e:'🥇',t:atual.premio_convites.replace(/^Assistir ao jogo no c/i,'C'),d:'Para o 1º lugar no ranking de convites'});
-  if(ng>0) L.push({e:ing?'🎟️':'🎁',t:`${ng} ${uniEv(ng)}${onde}`,d:'Sorteio geral entre todos os inscritos'});
+  if(ng>0) L.push({e:ing?'🎟️':'🎁',t:`${ng} ${uniEv(ng)}${onde}`,d:'Sorteio entre todos os inscritos'});
   if(na>0) L.push({e:'🎂',t:`${na} ${uniEv(na)}${onde}`,d:`Sorteio só entre os aniversariantes de ${MESES[mesEvento()]}`});
+  if(atual.premio_convites) L.push({e:'➕',t:'Prêmio extra: '+atual.premio_convites.replace(/^Assistir ao jogo no c/i,'c'),d:'Para quem mais convidar amigos que se inscreverem'});
   return L;
 }
 function textoPremios(){ return premiosEvento().map(x=>`${x.e} *${x.t}*\n   ${x.d}`).join('\n'); }
 $('rkCopiar').onclick=()=>{
   const rk=ranking().slice(0,10), med=i=>['🥇','🥈','🥉'][i]||`${i+1}º`;
   const ate=`${dia(atual.inscricoes_ate)} às ${hora(atual.inscricoes_ate).replace(':','h')}`;
-  copiar(`🏆 *RANKING DE CONVITES* 🏆
-🎁 _Nação Premiada · Lojas Oficiais do Flamengo_
+  copiar(`🎁 *NAÇÃO PREMIADA* 🎁
+_Lojas Oficiais do Flamengo_
 *${atual.nome}*
 
-`+rk.map((x,i)=>`${med(i)} ${nomePublico(x.p.nome)} — *${x.n}* ${x.n>1?'amigos':'amigo'}`).join('\n')+`
-
-🎁 *PRÊMIOS DESTA PROMOÇÃO*
+🏆 *PRÊMIOS DESTA PROMOÇÃO*
 ${textoPremios()}
 
-🍀 Cada amigo que se inscrever pelo seu convite vale *+1 ponto no ranking* e *+1 número da sorte* nos sorteios.
-⏳ Inscrições até *${ate}*. Ainda dá tempo de virar o jogo!
+🍀 Cada amigo que se inscrever pelo seu convite vale *+1 número da sorte* nos sorteios`+(atual.premio_convites?` e *+1 ponto no ranking* do prêmio extra`:'')+`.
 
+📊 *RANKING DE CONVITES*${atual.premio_convites?' (prêmio extra)':''}
+`+rk.map((x,i)=>`${med(i)} ${nomePublico(x.p.nome)} — *${x.n}* ${x.n>1?'amigos':'amigo'}`).join('\n')+`
+
+⏳ Inscrições até *${ate}*. Ainda dá tempo!
 👉 ${linkInscricao(atual)}`);
 };
 $('rkImagem').onclick=async()=>{
@@ -582,7 +583,7 @@ $('rkImagem').onclick=async()=>{
   const PR=premiosEvento();
   const wrap=(t,max)=>{const out=[];let cur='';t.split(' ').forEach(w=>{if((cur+' '+w).trim().length>max&&cur){out.push(cur);cur=w}else cur=(cur+' '+w).trim()});if(cur)out.push(cur);return out};
   PR.forEach(x=>{x.tl=wrap(x.t,42);x.dl=wrap(x.d,60);x.h=34+x.tl.length*40+x.dl.length*32});
-  const W=1080, linhaH=92, topo=330, H=topo+rk.length*linhaH+120+PR.reduce((a,x)=>a+x.h+14,0)+90;
+  const W=1080, linhaH=92, prH=PR.reduce((a,x)=>a+x.h+14,0), H=300+70+prH+110+rk.length*linhaH+110;
   const c=document.createElement('canvas'); c.width=W; c.height=H; const g=c.getContext('2d');
   const fundo=g.createLinearGradient(0,0,0,H); fundo.addColorStop(0,'#7a0e17'); fundo.addColorStop(.35,'#1a0b0d'); fundo.addColorStop(1,'#0b0b0c'); g.fillStyle=fundo; g.fillRect(0,0,W,H);
   const brilho=g.createRadialGradient(W/2,0,10,W/2,0,700); brilho.addColorStop(0,'rgba(230,40,60,.45)'); brilho.addColorStop(1,'rgba(230,40,60,0)'); g.fillStyle=brilho; g.fillRect(0,0,W,H);
@@ -590,29 +591,30 @@ $('rkImagem').onclick=async()=>{
   g.textAlign='center'; g.fillStyle='#fff';
   g.font=`700 30px ${F}`; g.globalAlpha=.85; g.fillText('LOJAS OFICIAIS DO FLAMENGO',W/2,78); g.globalAlpha=1;
   g.font=`900 92px ${F}`; g.fillText('🎁 NAÇÃO PREMIADA',W/2,180);
-  g.font=`800 50px ${F}`; g.fillStyle='#ffd36b'; g.fillText('🏆 RANKING DE CONVITES',W/2,255);
-  g.font=`600 34px ${F}`; g.fillStyle='#e9e3e4'; g.fillText(atual.nome.length>44?atual.nome.slice(0,43)+'…':atual.nome,W/2,305);
-  rk.forEach((x,i)=>{
-    const y=topo+i*linhaH;
-    g.fillStyle=i===0?'rgba(255,211,107,.18)':(i%2?'rgba(255,255,255,.04)':'rgba(255,255,255,.08)');
-    const r=22; g.beginPath(); g.roundRect?g.roundRect(60,y,W-120,linhaH-12,r):g.rect(60,y,W-120,linhaH-12); g.fill();
-    g.textAlign='left'; g.fillStyle='#fff'; g.font=`800 44px ${F}`;
-    g.fillText(['🥇','🥈','🥉'][i]||`${i+1}º`,90,y+56);
-    g.font=`700 42px ${F}`; let nm=nomePublico(x.p.nome); g.fillText(nm.length>24?nm.slice(0,23)+'…':nm,200,y+56);
-    g.textAlign='right'; g.font=`900 54px ${F}`; g.fillStyle=i===0?'#ffd36b':'#fff'; g.fillText(String(x.n),W-200,y+60);
-    g.font=`600 28px ${F}`; g.fillStyle='#c9c3c4'; g.fillText(x.n>1?'amigos':'amigo',W-90,y+56);
-  });
-  let y=topo+rk.length*linhaH+56; g.textAlign='center';
-  g.fillStyle='#ffd36b'; g.font=`800 40px ${F}`; g.fillText('🎁 PRÊMIOS DESTA PROMOÇÃO',W/2,y); y+=34;
+  g.font=`700 38px ${F}`; g.fillStyle='#e9e3e4'; g.fillText(atual.nome.length>44?atual.nome.slice(0,43)+'…':atual.nome,W/2,245);
+  let y=320;
+  g.fillStyle='#ffd36b'; g.font=`800 44px ${F}`; g.fillText('🏆 PRÊMIOS',W/2,y); y+=36;
   PR.forEach(x=>{
-    g.fillStyle='rgba(255,255,255,.07)'; g.beginPath(); g.roundRect?g.roundRect(60,y,W-120,x.h,22):g.rect(60,y,W-120,x.h); g.fill();
+    g.fillStyle=x.e==='➕'?'rgba(255,255,255,.05)':'rgba(255,211,107,.14)'; g.beginPath(); g.roundRect?g.roundRect(60,y,W-120,x.h,22):g.rect(60,y,W-120,x.h); g.fill();
     g.textAlign='left'; g.font=`700 46px ${F}`; g.fillStyle='#fff'; g.fillText(x.e,88,y+16+x.h/2);
     let yy=y+46; g.font=`800 32px ${F}`; x.tl.forEach(l=>{g.fillText(l,160,yy); yy+=40;});
     g.font=`500 26px ${F}`; g.fillStyle='#d9d2d3'; x.dl.forEach(l=>{g.fillText(l,160,yy-4); yy+=32;});
     y+=x.h+14;
   });
-  y+=44; g.textAlign='center';
-  g.fillStyle='#e9e3e4'; g.font=`600 32px ${F}`; g.fillText(`Convide seus amigos! Inscrições até ${dia(atual.inscricoes_ate)}`,W/2,y);
+  y+=62; g.textAlign='center'; g.fillStyle='#fff'; g.font=`800 38px ${F}`;
+  g.fillText(atual.premio_convites?'📊 RANKING DE CONVITES (prêmio extra)':'📊 RANKING DE CONVITES',W/2,y); y+=30;
+  rk.forEach((x,i)=>{
+    g.fillStyle=i===0?'rgba(255,211,107,.18)':(i%2?'rgba(255,255,255,.04)':'rgba(255,255,255,.08)');
+    g.beginPath(); g.roundRect?g.roundRect(60,y,W-120,linhaH-12,22):g.rect(60,y,W-120,linhaH-12); g.fill();
+    g.textAlign='left'; g.fillStyle='#fff'; g.font=`800 44px ${F}`;
+    g.fillText(['🥇','🥈','🥉'][i]||`${i+1}º`,90,y+56);
+    g.font=`700 42px ${F}`; let nm=nomePublico(x.p.nome); g.fillText(nm.length>24?nm.slice(0,23)+'…':nm,200,y+56);
+    g.textAlign='right'; g.font=`900 54px ${F}`; g.fillStyle=i===0?'#ffd36b':'#fff'; g.fillText(String(x.n),W-200,y+60);
+    g.font=`600 28px ${F}`; g.fillStyle='#c9c3c4'; g.fillText(x.n>1?'amigos':'amigo',W-90,y+56);
+    y+=linhaH;
+  });
+  y+=50; g.textAlign='center';
+  g.fillStyle='#e9e3e4'; g.font=`600 32px ${F}`; g.fillText(`Inscreva-se e convide seus amigos! Até ${dia(atual.inscricoes_ate)}`,W/2,y);
   const blob=await new Promise(r=>c.toBlob(r,'image/png'));
   const arq=new File([blob],'ranking-nacao-premiada.png',{type:'image/png'});
   try{ if(navigator.canShare&&navigator.canShare({files:[arq]})){ await navigator.share({files:[arq],title:'Ranking de convites'}); return; } }catch(e){ if(e&&e.name==='AbortError') return; }
@@ -806,9 +808,9 @@ $('bCopiarRes').onclick=()=>{
   const lin=p=>`• ${curto(p.nome)} – WhatsApp final ${p.whatsapp.slice(-4)}`;
   const rk=ranking(), top=rk[0];
   let t=`🏆 *RESULTADO – NAÇÃO PREMIADA* 🏆\n_Lojas Oficiais do Flamengo_\n*${atual.nome}*${atual.data_evento?` · ${dia(atual.data_evento)}`:''}\n`;
-  if(atual.premio_convites&&top) t+=`\n🥇 *${atual.premio_convites}*\nQuem mais convidou amigos:\n• ${curto(top.p.nome)} – *${top.n}* ${top.n>1?'amigos inscritos':'amigo inscrito'}\n`;
-  if(geral.length) t+=`\n${ing?'🎟️':'🎁'} *${geral.length} ${uniEv(geral.length)}${onde}* – sorteio geral\n`+geral.map(lin).join('\n')+'\n';
-  if(aniv.length) t+=`\n🎂 *${aniv.length} ${uniEv(aniv.length)}${onde}* – aniversariantes de ${MESES[mesEvento()]}\n`+aniv.map(lin).join('\n')+'\n';
+  if(geral.length) t+=`\n${ing?'🎟️':'🎁'} *SORTEIO – ${geral.length} ${uniEv(geral.length)}${onde}*\n`+geral.map(lin).join('\n')+'\n';
+  if(aniv.length) t+=`\n🎂 *ANIVERSARIANTE DE ${MESES[mesEvento()].toUpperCase()} – ${aniv.length} ${uniEv(aniv.length)}${onde}*\n`+aniv.map(lin).join('\n')+'\n';
+  if(atual.premio_convites&&top) t+=`\n➕ *PRÊMIO EXTRA – ${atual.premio_convites}*\nQuem mais convidou amigos:\n• ${curto(top.p.nome)} – *${top.n}* ${top.n>1?'amigos inscritos':'amigo inscrito'}\n`;
   t+=`\n📲 Os ganhadores serão avisados no privado e precisam mandar o print mostrando que seguem o canal.\nParabéns! 🎉🔴⚫`;
   copiar(t);
 };

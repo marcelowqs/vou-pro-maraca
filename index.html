@@ -354,8 +354,8 @@ async function carregarConvite(){
       $('evRegra').innerHTML = `<details class="rulesBox"><summary>📋 Ver as regras do sorteio ▾</summary><ol class="regras">`+
         `<li><b>Seguir o canal Lojas Oficiais do Flamengo no WhatsApp é imprescindível para ganhar o prêmio.</b> Quem for sorteado e não estiver seguindo o canal perde o prêmio. O ganhador vai precisar mandar um print mostrando que segue o canal.</li>`+
         `<li><b>Quanto mais amigos você chamar, maiores as suas chances!</b> Cada amigo que se inscrever pelo seu convite vale +1 número da sorte. Sem limite.</li>`+
-        (premioConv ? `<li>🏆 <b>Prêmio para quem mais convidar:</b> quem fizer o maior número de convites que gerarem inscrição ganha: <b>${esc2(premioConv)}</b>. Em caso de empate, ganha quem chegou primeiro a esse número. Esse prêmio é separado: você continua concorrendo no sorteio.</li>` : '')+
         (qtdAniv>0 ? `<li>🎂 <b>Sorteio separado para os aniversariantes de ${MESES[mesAniv]}:</b> ${qtdAniv} dos ${evento.qtd_ganhadores} ${uni(evento.qtd_ganhadores)} ${qtdAniv>1?'são sorteados':'é sorteado'} só entre quem faz aniversário em ${MESES[mesAniv]}. Esse sorteio acontece primeiro e os números da sorte também valem nele: <b>aniversariante que convida mais amigos tem mais chances</b>. Quem não ganhar continua concorrendo no sorteio geral.</li>` : '')+
+        (premioConv ? `<li>➕ <b>Prêmio extra para quem mais convidar:</b> quem fizer o maior número de convites que gerarem inscrição ganha: <b>${esc2(premioConv)}</b>. Em caso de empate, ganha quem chegou primeiro a esse número. Esse prêmio é separado: você continua concorrendo no sorteio.</li>` : '')+
         `<li>Uma inscrição por WhatsApp${evento.idade_minima>0?`, somente maiores de ${evento.idade_minima} anos`:''}.</li></ol></details>`;
       $('evRegra').classList.remove('hidden');
     }
@@ -409,7 +409,7 @@ $('atualizarNumeros').onclick=async()=>{ await atualizarNumeros(); toast('Númer
   $('evAte').textContent=fmtData(evento.inscricoes_ate);
   $('evIdade').textContent = evento.idade_minima>0 ? `Somente maiores de ${evento.idade_minima} anos. Uma inscrição por WhatsApp.` : 'Uma inscrição por WhatsApp.';
   $('eventoCard').classList.remove('hidden');
-  const ex=[]; if(premioConv) ex.push(`🏆 Quem mais convidar amigos ganha: ${esc2(premioConv)}`); if(qtdAniv>0) ex.push(`🎂 Sorteio separado para aniversariantes de ${MESES[mesAniv]}`);
+  const ex=[]; if(qtdAniv>0) ex.push(`🎂 Sorteio separado para aniversariantes de ${MESES[mesAniv]}`); if(premioConv) ex.push(`➕ Prêmio extra para quem mais convidar amigos: ${esc2(premioConv)}`);
   if(ex.length) $('chamadaAniv').innerHTML=ex.map(x=>`<span>${x}</span>`).join('');
   if(evento.sorteado){ mostrarErro('Sorteio realizado! 🏆','Este sorteio já aconteceu. Os vencedores foram avisados pelo WhatsApp.'); return; }
   if(!evento.aberto){ mostrarErro('Inscrições encerradas','O prazo de inscrição deste sorteio terminou. Aguarde o resultado no canal!'); return; }
